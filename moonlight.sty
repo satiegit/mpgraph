@@ -1,0 +1,1167 @@
+% ==========================================================
+% 高等学校での数学プリント作成時に便利な、LaTeXのマクロ？コマンド集。
+%   1997年試作  >>>>>  1998.5.10 改訂　>>>>>2003.4.28.暫定6.13
+%   2004年 向陽高校へ転勤を期に、改名 rakucomm.tex-->koyocom.sty
+%   形式もLaTeX2eのスタイルファイルへと移行中。京女の小波氏の手直し済み？
+%   向陽高校の校章 2004.6.18.
+% ==========================================================
+% 段落間隔の設定
+\def\ParagraphSpaceSet(#1)[#2]{\parskip=#1\zw plus #2\zw}
+% enumerate等の番号の継続用
+\newcounter{mynumber}
+\def\qbSaveEnumi{\setcounter{mynumber}{\value{enumi}}}
+\def\qbLoadEnumi{\setcounter{enumi}{\value{mynumber}}}
+\def\qbSaveEnumii{\setcounter{mynumber}{\value{enumii}}}
+\def\qbLoadEnumii{\setcounter{enumii}{\value{mynumber}}}
+\newcounter{tmpCnt}
+\def\qbSaveEnumi{\setcounter{mynumber}{\value{enumi}}}
+\def\qbLoadEnumi{\setcounter{enumi}{\value{mynumber}}}
+\def\qbSaveEnumii{\setcounter{mynumber}{\value{enumii}}}
+\def\qbLoadEnumii{\setcounter{enumii}{\value{mynumber}}}
+% 前の問題
+\def\wbBackenumi(#1){\addtocounter{enumi}{-#1}\labelenumii\addtocounter{enumi}{#1}}
+\def\wbBackenumii(#1){\addtocounter{enumii}{-#1}\labelenumii\addtocounter{enumii}{#1}}
+\def\wbBackenumiii(#1){\addtocounter{enumiii}{-#1}\labelenumiii\addtocounter{enumiii}{#1}}
+% Temporaly Macros 装飾用
+\def\tmpBBox[#1](#2,#3){%----------------------------------------|     | \tmpBBox #1:単位長 #2:横 #3:縦
+\begin{mplibcode}
+\mpBaseSize(#1mm)\mpHandWriteSet\mpHandWriteOn\mpPenSize(1.2)
+\mpPlattice(0,0)(#2,#3)
+\end{mplibcode}%
+}%---------------------------------------------------------------|     | #1mm幅で横#2縦#3の格子を描く
+% ベクトル　小文字用，大文字線分用
+\def\wbVec(#1){\overrightarrow{\rm #1}}
+\def\wbvec(#1){\overrightarrow{#1}}
+\def\parallelto(#1){/\!\!/}%
+%\makeatletter
+%\def\proportionalto{∽}%
+\def\proportionalto{%
+   \mathrel{\mathchoice
+      {\@proportionalto\tf@size}{\@proportionalto\tf@size}%
+      {\@proportionalto\sf@size}{\@proportionalto\ssf@size}}}
+\def\@proportionalto#1{%
+   \vcenter{\hbox{%
+      \dimen@#1\p@\unitlength.1\dimen@
+      \@proportionalto@check@boldness
+      \qbezier(3.4,2.7)(2.5,3.375)(1.6,2.7)%
+      \qbezier(1.6,2.7)(.7,1.5)(1.6,.3)%
+      \qbezier(1.6,.3)(2.5,-.375)(3.4,.3)%
+      \qbezier(3.4,.3)(5,1.5)(6.6,2.7)%
+      \qbezier(6.6,2.7)(7.5,3.375)(8.4,2.7)%
+      \qbezier(8.4,2.7)(9.3,1.5)(8.4,.3)%
+      \qbezier(8.4,.3)(7.5,-.375)(6.6,.3)%
+      \vrule\@width\dimen@\@height\z@\@depth\z@}}}
+\def\@proportionalto@check@boldness{%
+   \def\@varpropto@temp{bold}%
+   \ifx\math@version\@varpropto@temp\thicklines\else\thinlines\fi}
+\makeatother
+% 弧
+\newcommand{\wbarc}[1]{%
+ \settowidth{\dimen0}{\ensuremath{#1}}%
+ \divide\dimen0 by 2%
+ \overset{\rotatebox{-90}{\ensuremath{\left(\rule{0pt}{\dimen0}\right.}}}{#1}%
+}
+% 絶対値
+\newcommand{\kabs}[1]{%
+  \settoheight{\dimen0}{$\mathstrut #1$}%
+  \advance\dimen0 .2pt% 絶対値記号の上のはみだし量,参考にしたものは0.5pt
+  \settodepth{\dimen1}{$#1$}%
+  \advance\dimen1 1.5pt% 絶対値記号の下のはみだし量,参考にしたものは0.5pt
+  \hbox{\;\vrule height\dimen0 depth\dimen1\,% 絶対値と式との間隔\,は\;などで調整
+  \hbox{$#1$}%
+  \,\vrule height\dimen0 depth\dimen1\;}}% 絶対値と式との間隔\,は\;などで調整
+%\newcommand{\veccc}[1]{\vv{\,\smash[b]{\mathstrut {\rm #1}}\,}}
+%\newcommand{\vecc}[1]{\vv{\smash[b]{\mathstrut #1}}}
+%\newcommand{\aveccc}[1]{\kabs{\vv{\,\smash[b]{\mathstrut {\rm #1}}\,}}}
+%\newcommand{\avecc}[1]{\kabs{\vv{\smash[b]{\mathstrut #1}}}}
+% ベクトルと絶対値
+\newcommand{\veccc}[1]{\overrightarrow{\,\smash[b]{\mathstrut {\rm #1}}\,}}
+\newcommand{\vecc}[1]{\overrightarrow{\smash[b]{\mathstrut #1}}}
+\newcommand{\aveccc}[1]{\kabs{\overrightarrow{\,\smash[b]{\mathstrut {\rm #1}}\,}}}
+\newcommand{\avecc}[1]{\kabs{\overrightarrow{\smash[b]{\mathstrut #1}}}}
+\newcommand{\fracm}[2]{\dfrac{\lower.6ex\hbox{$\,#1\,$}}{\lower-.2ex\hbox{$\,#2\,$}}}
+\newcommand{\fracmp}[2]{\dfrac{\lower1ex\hbox{$\,#1\,$}}{\lower-.8ex\hbox{$\,#2\,$}}}
+%%%%%%% 線対称な点の指定qbGraph用
+\def\qbGrefPoint #1 #2#3 #4{%
+\qbGverticalPoint #1 #2#3 x\qbGdivPoint #1x 2:-1 #4} 
+% 暫定版　西乙訓校章
+\def\westbetasym(#1){%
+%\begin{qbPMP}[#1](3,2)(-1.5,-1)
+\unitlength=#1mm
+\begin{picture}(10,4)(-5,-2)
+\qbPointDef A(0,2)\qbPointDef B(0,-2)\qbPointDef O(0,0)
+%\qbGcircd A(1)%\qbGcircd B(1)
+\qbGcircarc A(1)(0,180)
+\qbGcircarc B(1)(180,360)
+\qbPointDef C(1,2)\qbPointDef D(1,-2)\qbGline CD
+\qbGdivPoint CA 2:-1 E\qbGdivPoint DB 2:-1 F\qbGline EF
+\qbPointDef G(5,0.5)\qbPointDef H(2,-2.5)\qbGdivPoint HG 1:7 H\qbGline GH
+\qbGverticalPoint G AB I\qbGdivPoint GI 2:-1 J
+\qbGverticalPoint H AB K\qbGdivPoint HK 2:-1 L\qbGline JL
+%\qbPointDef M(2,1)\qbGcircd M(1)
+\qbGrotPoint HG 90 m\qbGdivPoint Hm 2:11 M%\qbGcircld MH
+\qbGrotPoint MH -135 m\qbGarc MmH
+\qbGmovePoint m OA N\qbGdivPoint mN 5:-1 N\qbGline mN
+\qbGrotPoint Nm 90 n\qbGdivPoint Nn 3:4 P%\qbGcircld PN
+\qbGrotPoint PN -90 Q\qbGarc PQN
+\qbGrotPoint QP 90 R\qbGbezier QRG 
+%
+\qbGrefPoint M AB S\qbGrefPoint m AB s\qbGarc SLs
+\qbGrefPoint N AB T\qbGline sT
+\qbGrefPoint P AB U%\qbGcircld UT
+\qbGrefPoint Q AB V\qbGarc UTV
+\qbGrefPoint R AB W\qbGbezier VWJ
+%
+%
+%
+\thicklines
+\qbGverticalPoint P AB H\qbGdivPoint PH 2:5 P\qbGrefPoint P AB U
+\qbGline PU
+\qbGdivPoint PU 1:2 x\qbGdivPoint PU 2:1 y
+\qbGdivPoint AB 1:8 a
+\qbGmidPoint PU N\qbGmovePoint N aA n\qbGline Nn
+\qbGmovePoint x Aa X\qbGmovePoint y Aa Y\qbGline XY
+\qbGmovePoint X Aa X\qbGmovePoint Y Aa Y\qbGline XY
+\qbGmovePoint X Aa P\qbGmovePoint Y Aa Q%\qbGline XY
+\qbGmovePoint X Aa X\qbGmovePoint Y Aa Y%\qbGline XY
+\qbGline Px\qbGline Qy
+\qbGdivPoint XY 3:-1 y
+\qbGdivPoint XY -1:3 x\qbGline xy
+\qbGmovePoint x Aa X\qbGmovePoint y Aa Y%\qbGline XY
+\qbGmovePoint X Aa X\qbGmovePoint Y Aa Y%\qbGline XY
+\qbGmovePoint X Aa X\qbGmovePoint Y Aa Y%\qbGline XY
+\qbGline Xx\qbGline Yy
+\qbGmovePoint P Aa P\qbGmovePoint Q Aa Q%\qbGline XY
+\qbGmovePoint P Aa X\qbGmovePoint Q Aa Y%\qbGline XY
+\qbGlines XPQY.
+\qbGmovePoint X Aa P\qbGmovePoint Y Aa Q%\qbGline XY
+\qbGmidPoint PQ M\qbGlines XMY.
+%\end{qbPMP}
+\end{picture}
+}%
+\newcommand{\mtcsymbol}[1]{
+  \unitlength=#1
+  \begin{picture}(2,2)(-1,0.2)
+     \qbezier(0,0.288)(0.5,0.144)(1,0)
+     \qbezier(0,0.288)(-0.5,0.144)(-1,0)
+     \qbezier(0.5,0.864)(0.75,0.432)(1,0)
+     \qbezier(-0.5,0.864)(-0.75,0.432)(-1,0)
+     \qbezier(0.5,0.864)(0.434,0.782)(0.356,0.700)
+     \qbezier(-0.5,0.864)(-0.434,0.782)(-0.356,0.700)
+     \qbezier(0.356,0.700)(0.178,1.216)(0,1.732)
+     \qbezier(-0.356,0.700)(-0.178,1.216)(0,1.732)
+  \end{picture}
+}
+\newcommand{\koyosymbol}{
+   \unitlength=.06mm
+   \begin{picture}(160,150)(-80,-50)
+%      \qbezier(-70,-60)(-80,-60)(-80,-50)
+%      \qbezier(70,90)(80,90)(80,80)
+      \qbezier(21.65,-50),(-21.65,-50),(-64.95,-50)
+      \qbezier(-64.95,-50),(-24.36,-26.56),(16.24,-3.12)
+      \qbezier(32.48,43.75),(54.13,6.25),(75.78,-31.25)
+      \qbezier(75.78,-31.25),(35.18,-7.81),(-5.41,15.63)
+      \qbezier(-54.13,6.25),(-32.48,43.75),(-10.83,81.25)
+      \qbezier(-10.83,81.25),(-10.83,34.38),(-10.83,-12.5)
+      \qbezier(-5.41,9.38),(-5.41,0),(-5.41,-9.37)
+      \qbezier(-5.41,-9.37),(2.71,-4.69),(10.83,0)
+      \qbezier(10.83,0),(2.71,4.69),(-5.41,9.38)
+      \qbezier(16.24,-3.12),(36.37,-14.75),(56.49,-26.37)
+      \qbezier(-5.41,15.63),(-5.41,38.87),(-5.41,62.11)
+      \qbezier(-10.83,-12.5),(-30.95,-24.12),(-51.08,-35.74)
+      \qbezier(21.65,-50),(31.7,-50),(40.4,-44.98)
+      \qbezier(40.4,-44.98),(49.1,-39.95),(54.13,-31.25)
+      \qbezier(54.13,-31.25),(55.49,-28.89),(56.49,-26.37)
+      \qbezier(-54.13,6.25),(-59.15,-2.45),(-59.15,-12.5)
+      \qbezier(-59.15,-12.5),(-59.15,-22.55),(-54.13,-31.25)
+      \qbezier(-54.13,-31.25),(-52.77,-33.61),(-51.08,-35.74)
+      \qbezier(32.48,43.75),(27.45,52.45),(18.75,57.48)
+      \qbezier(18.75,57.48),(10.05,62.5),(0,62.5)
+      \qbezier(0,62.5),(-2.72,62.5),(-5.41,62.11)
+   \end{picture}
+}
+
+\newcommand{\calplu}[2]{
+  \count1=#1
+  \count2=#2
+  $\the\count1 + \the\count2 =
+  \advance\count1 by \count2
+  \the\count1$
+}
+
+% ==========================================================
+%  b4サイズでの使用を前提。できるだけ広く使いたい
+% ==========================================================
+\newcommand{\bfset}{
+\setlength{\topmargin}{-25mm}
+\setlength{\oddsidemargin}{-15mm}
+\setlength{\textwidth}{237mm}
+\setlength{\textheight}{334mm}
+}
+\newcommand{\afset}{
+\setlength{\topmargin}{-15mm}
+\setlength{\oddsidemargin}{-15mm}
+\setlength{\textwidth}{200mm}
+\setlength{\textheight}{287mm}
+}
+% ==========================================================
+%  boxのラインは細いのがよい
+% ==========================================================
+\setlength{\fboxrule}{0.2pt}
+
+\setlength{\unitlength}{.3mm}
+
+% ==========================================================
+%  放物線と$x$軸の図（二次不等式向け）
+% ==========================================================
+\newcommand{\paraboxu}[1]{
+   \unitlength=0.25mm
+   \begin{picture}(120,130)(-60,-12)
+    \thinlines
+    \bezier{80}(-30,54)(-25,36)(-20,24)
+    \bezier{50}(-20,24)(-15,12)(-10,6)
+    \bezier{20}(-10,6)(-5,0)(0,0)
+    \bezier{20}(0,0)(5,0)(10,6)
+    \bezier{50}(10,6)(15,12)(20,24)
+    \bezier{80}(20,24)(25,36)(30,54)
+    \put(-38,20){\vector(1,0){76}}
+    \put(0,95){\makebox(3,5){$\dsp{#1}$}}
+   \end{picture}
+}
+\newcommand{\paraboxus}[1]{
+   \unitlength=0.25mm
+   \begin{picture}(120,130)(-60,-12)
+    \thinlines
+    \bezier{80}(-30,54)(-25,36)(-20,24)
+    \bezier{50}(-20,24)(-15,12)(-10,6)
+    \bezier{20}(-10,6)(-5,0)(0,0)
+    \bezier{20}(0,0)(5,0)(10,6)
+    \bezier{50}(10,6)(15,12)(20,24)
+    \bezier{80}(20,24)(25,36)(30,54)
+    \put(-38,0){\vector(1,0){76}}
+    \put(0,95){\makebox(3,5){$\dsp{#1}$}}
+   \end{picture}
+}
+\newcommand{\paraboxue}[1]{
+   \unitlength=0.25mm
+   \begin{picture}(120,130)(-60,-12)
+    \thinlines
+    \bezier{80}(-30,54)(-25,36)(-20,24)
+    \bezier{50}(-20,24)(-15,12)(-10,6)
+    \bezier{20}(-10,6)(-5,0)(0,0)
+    \bezier{20}(0,0)(5,0)(10,6)
+    \bezier{50}(10,6)(15,12)(20,24)
+    \bezier{80}(20,24)(25,36)(30,54)
+    \put(-38,-18){\vector(1,0){76}}
+    \put(0,95){\makebox(3,5){$\dsp{#1}$}}
+   \end{picture}
+}
+\newcommand{\paraboxd}[1]{
+   \unitlength=0.25mm
+   \begin{picture}(120,130)(-60,-54)
+    \thinlines
+    \qbezier{80}(-30,-54)(-25,-36)(-20,-24)
+    \qbezier{50}(-20,-24)(-15,-12)(-10,-6)
+    \qbezier{20}(-10,-6)(-5,0)(0,0)
+    \qbezier{20}(0,0)(5,0)(10,-6)
+    \qbezier{50}(10,-6)(15,-12)(20,-24)
+    \qbezier{80}(20,-24)(25,-36)(30,-54)
+    \put(-38,-20){\vector(1,0){76}}
+    \put(0,53){\makebox(3,5){$\dsp{#1}$}}
+   \end{picture}
+}
+\newcommand{\paraboxds}[1]{
+   \unitlength=0.25mm
+   \begin{picture}(120,130)(-60,-54)
+    \thinlines
+    \bezier{80}(-30,-54)(-25,-36)(-20,-24)
+    \bezier{50}(-20,-24)(-15,-12)(-10,-6)
+    \bezier{20}(-10,-6)(-5,0)(0,0)
+    \bezier{20}(0,0)(5,0)(10,-6)
+    \bezier{50}(10,-6)(15,-12)(20,-24)
+    \bezier{80}(20,-24)(25,-36)(30,-54)
+    \put(-38,0){\vector(1,0){76}}
+    \put(0,55){\makebox(3,5){$\dsp{#1}$}}
+   \end{picture}
+}
+\newcommand{\paraboxde}[1]{
+   \unitlength=0.25mm
+   \begin{picture}(120,130)(-60,-54)
+    \thinlines
+    \bezier{80}(-30,-54)(-25,-36)(-20,-24)
+    \bezier{50}(-20,-24)(-15,-12)(-10,-6)
+    \bezier{20}(-10,-6)(-5,0)(0,0)
+    \bezier{20}(0,0)(5,0)(10,-6)
+    \bezier{50}(10,-6)(15,-12)(20,-24)
+    \bezier{80}(20,-24)(25,-36)(30,-54)
+    \put(-38,18){\vector(1,0){76}}
+    \put(0,53){\makebox(3,5){$\dsp{#1}$}}
+   \end{picture}
+}
+% ==========================================================
+%  単位円と一般角図示用の十字
+% ==========================================================
+\newcommand{\unitcircle}{
+   \unitlength=0.3mm
+   \begin{picture}(80,80)(-40,-40)
+    \thinlines
+    \bezier{10}(30,0)(30,10)(24,18)
+    \bezier{5}(24,18)(21.5,21.5)(18,24)
+    \bezier{10}(0,30)(10,30)(18,24)
+    \bezier{10}(-30,0)(-30,10)(-24,18)
+    \bezier{5}(-24,18)(-21.5,21.5)(-18,24)
+    \bezier{10}(-0,30)(-10,30)(-18,24)
+    \bezier{10}(30,0)(30,-10)(24,-18)
+    \bezier{5}(24,-18)(21.5,-21.5)(18,-24)
+    \bezier{10}(0,-30)(10,-30)(18,-24)
+    \bezier{10}(-30,0)(-30,-10)(-24,-18)
+    \bezier{5}(-24,-18)(-21.5,-21.5)(-18,-24)
+    \bezier{10}(-0,-30)(-10,-30)(-18,-24)
+    \put(-38,0){\vector(1,0){76}}
+    \put(0,-38){\vector(0,1){76}}
+   \end{picture}
+}
+\newcommand{\anglecross}{
+   \unitlength=0.3mm
+   \begin{picture}(80,80)(-40,-40)
+    \bezier{10}(30,0)(30,10)(24,18)
+    \bezier{5}(24,18)(21.5,21.5)(18,24)
+    \bezier{10}(0,30)(10,30)(18,24)
+    \bezier{10}(-30,0)(-30,10)(-24,18)
+    \bezier{5}(-24,18)(-21.5,21.5)(-18,24)
+    \bezier{10}(-0,30)(-10,30)(-18,24)
+    \bezier{10}(30,0)(30,-10)(24,-18)
+    \bezier{5}(24,-18)(21.5,-21.5)(18,-24)
+    \bezier{10}(0,-30)(10,-30)(18,-24)
+    \bezier{10}(-30,0)(-30,-10)(-24,-18)
+    \bezier{5}(-24,-18)(-21.5,-21.5)(-18,-24)
+    \bezier{10}(-0,-30)(-10,-30)(-18,-24)
+    \put(0.25,0){\circle*{2}}
+    \bezier{20}(0,0)(-17,0)(-34,0)
+    \bezier{20}(0,0)(0,17)(0,34)
+    \bezier{20}(0,0)(0,-17)(0,-34)
+    \put(32,2){\makebox(3,5){\tiny {\gt 始線}}}
+    \thicklines
+    \put(0,0){\line(1,0){35}}
+   \end{picture}
+}
+\newcommand{\unitcircleP}[1]{
+   \unitlength=0.3mm
+   \begin{picture}(80,110)(-40,-40)
+    \thinlines
+    \bezier{10}(30,0)(30,10)(24,18)
+    \bezier{5}(24,18)(21.5,21.5)(18,24)
+    \bezier{10}(0,30)(10,30)(18,24)
+    \bezier{10}(-30,0)(-30,10)(-24,18)
+    \bezier{5}(-24,18)(-21.5,21.5)(-18,24)
+    \bezier{10}(-0,30)(-10,30)(-18,24)
+    \bezier{10}(30,0)(30,-10)(24,-18)
+    \bezier{5}(24,-18)(21.5,-21.5)(18,-24)
+    \bezier{10}(0,-30)(10,-30)(18,-24)
+    \bezier{10}(-30,0)(-30,-10)(-24,-18)
+    \bezier{5}(-24,-18)(-21.5,-21.5)(-18,-24)
+    \bezier{10}(-0,-30)(-10,-30)(-18,-24)
+    \put(-38,0){\vector(1,0){76}}
+    \put(0,-38){\vector(0,1){76}}
+    \bezier{10}(15,-30)(15,0)(15,30)
+    \bezier{10}(-15,-30)(-15,0)(-15,30)
+    \bezier{10}(-30,15)(0,15)(30,15)
+    \bezier{10}(-30,-15)(0,-15)(30,-15)
+    \put(0,50){\makebox(3,5){$#1$}}
+   \end{picture}
+}
+\def\unitcirclePtan(#1){
+%   \unitlength=0.3mm   \begin{picture}(80,110)(-40,-40)
+\begin{qbPMP}[10](2,4)(-1.1,-2)
+\qbPointDef O(0,0)\qbGcircd O(1)
+%    \put(-38,0){\vector(1,0){76}}    \put(0,-38){\vector(0,1){76}}
+    \put(-1.2,0){\vector(1,0){2.4}}    \put(0,-1.2){\vector(0,1){2.4}}
+%\qbParrow(-1.2,0)(1.2,0)1\qbParrow(0,-1.2)(0,1.2)1
+\qbPlined(1,-2)(1,2)\qbPlinee[16](-0.7,-0.7)(1,1)\qbPlinee[16](-0.7,0.7)(1,-1)
+\qbPline(0.95,1)(1.05,1)\qbPline(0.95,-1)(1.05,-1)
+    \put(-1,1){\makebox(1,2){$#1$}}
+%   \end{picture}
+\end{qbPMP}
+}
+\newcommand{\anglecrossP}[1]{
+   \unitlength=0.3mm
+   \begin{picture}(80,100)(-40,-40)
+    \bezier{10}(30,0)(30,10)(24,18)
+    \bezier{5}(24,18)(21.5,21.5)(18,24)
+    \bezier{10}(0,30)(10,30)(18,24)
+    \bezier{10}(-30,0)(-30,10)(-24,18)
+    \bezier{5}(-24,18)(-21.5,21.5)(-18,24)
+    \bezier{10}(-0,30)(-10,30)(-18,24)
+    \bezier{10}(30,0)(30,-10)(24,-18)
+    \bezier{5}(24,-18)(21.5,-21.5)(18,-24)
+    \bezier{10}(0,-30)(10,-30)(18,-24)
+    \bezier{10}(-30,0)(-30,-10)(-24,-18)
+    \bezier{5}(-24,-18)(-21.5,-21.5)(-18,-24)
+    \bezier{10}(-0,-30)(-10,-30)(-18,-24)
+    \put(0.25,0){\circle*{2}}
+    \bezier{20}(0,0)(-17,0)(-34,0)
+    \bezier{20}(0,0)(0,17)(0,34)
+    \bezier{20}(0,0)(0,-17)(0,-34)
+    \put(32,2){\makebox(3,5){\tiny {\gt 始線}}}
+    \put(0,45){\makebox(3,5){$#1$}}
+    \thicklines
+    \put(0,0){\line(1,0){35}}
+   \end{picture}
+}
+
+% ==========================================================
+% 「センター試験用番号」
+% ==========================================================
+%-------------------------------------------------------------------------------------
+\font\marksheet=msheet
+\font\mrksht=msheet2
+\makeatletter
+\def\@marknum#1{\ifcase#1{\marksheet 0}\or {\marksheet 1}\or {\marksheet 2}%
+\or {\marksheet 3}\or {\marksheet 4}\or {\marksheet 5}%
+\or {\marksheet 6}\or {\marksheet 7}\or {\marksheet 8}\or {\marksheet 9}\else\@ctrerr\fi\relax}%
+\def\marknum#1{\@marknum{\@nameuse{c@#1}}}
+\makeatother
+
+% ==========================================================
+% 「問題番号の設定」と「数学記号用コマンド(≦≧゜)の作成」
+% ==========================================================
+% 大問は大きめのアラビア数字。小問()付きの普通のアラビア数字
+\renewcommand{\labelenumi}{\Large\itshape{\theenumi.}}
+\renewcommand{\labelenumii}{(\arabic{enumii})} 
+\renewcommand{\labelenumiii}{\arabic{enumiii})} 
+%\renewcommand{\labelenumiiii}{\arabic{enumiiii})} 
+
+% ==========================================================
+% 穴埋め解答用の空欄作成コマンド
+% ==========================================================
+\newcommand{\kbox}[1]{\fbox{\rule[-0.3cm]{0cm}{0.8cm} #1}}
+\newcommand{\kb}[1]{\fbox{\rule[-0.3cm]{0cm}{0.8cm} \hspace{#1}}}
+\newcommand{\kbdb}[1]{\fbox{\rule[-0.3cm]{0cm}{0.8cm} \hspace{#1}\lower2ex\hbox{,}\hspace{#1}}}
+\newcommand{\kbtrp}[1]{\fbox{\rule[-0.3cm]{0cm}{0.8cm} \hspace{#1}\lower2ex\hbox{,}\hspace{#1}\lower2ex\hbox{,}\hspace{#1}}}
+\newcommand{\kbw}[1]{\fbox{\rule[-0.5cm]{0cm}{1.2cm} \hspace{#1}}}
+\newcommand{\kbwdb}[1]{\fbox{\rule[-0.5cm]{0cm}{1.2cm} \hspace{#1}\lower2ex\hbox{,}\hspace{#1}}}
+\newcommand{\kbww}[1]{\fbox{\rule[-0.8cm]{0cm}{1.8cm} \hspace{#1}}}
+\newcommand{\kbs}[1]{\fbox{\rule[-0.2cm]{0cm}{0.6cm} \hspace{#1}}}
+\newcommand{\kbss}[1]{\fbox{\rule[-0.1cm]{0cm}{0.4cm} \hspace{#1}}}
+\newcommand{\kbsss}[1]{\fbox{\rule[-0.05cm]{0cm}{0.2cm} \hspace{#1}}}
+\newcommand{\kbssss}[1]{\fbox{\rule[-0.02cm]{0cm}{0.12cm} \hspace{#1}}}
+\newcommand{\kbA}[2]{\fbox{\rule[-0.3cm]{0cm}{0.8cm} #2\hspace{#1}}}
+\newcommand{\kbAB}[3]{\fbox{\rule[-0.3cm]{0cm}{0.8cm} #2\hspace{#1}#3}}
+\newcommand{\kbAA}[3]{\fbox{\rule[-0.3cm]{0cm}{0.8cm} #2\hspace{#1}#3\hspace{#1}\hspace{2mm}}}
+\newcommand{\kbwA}[2]{\fbox{\rule[-0.5cm]{0cm}{1.2cm} #2\hspace{#1}}}
+\newcommand{\kbwAA}[3]{\fbox{\rule[-0.5cm]{0cm}{1.2cm} #2\hspace{#1}#3\hspace{#1}\hspace{2mm}}}
+\newcommand{\kbsA}[2]{\fbox{\rule[-0.2cm]{0cm}{0.6cm} #2\hspace{#1}}}
+\newcommand{\kbssA}[2]{\fbox{\rule[-0.1cm]{0cm}{0.4cm} #2\hspace{#1}}}
+\newcommand{\kbsssA}[2]{\fbox{\rule[-0.05cm]{0cm}{0.2cm} #2\hspace{#1}}}
+\newcommand{\kbU}[2]{\;\fbox{\rule[1mm]{-1mm}{-2mm} \hspace{#1}#2\hspace{#1}}\,}%
+\newcommand{\kbUc}[2]{\kbU{#1}{\kbcentcirc{#2}}}%
+%=====================
+%丸数字丸文字用マクロ
+\newsavebox{\kbcirclebox}
+%\savebox{\kbcirclebox}{\fontencoding{OMS}\selectfont\Large\char13}
+\savebox{\kbcirclebox}{\fontencoding{OMS}\selectfont\char13}
+\newlength{\kbcircleboxwdht}
+\newcommand{\kbcentcirc}[1]{%
+  \setlength{\kbcircleboxwdht}{\wd\kbcirclebox}%
+  \addtolength{\kbcircleboxwdht}{\dp\kbcirclebox}%
+%  \raisebox{0.4\dp\kbcirclebox}{%
+  \raisebox{0.1\dp\kbcirclebox}{%
+%    \parbox[][\kbcircleboxwdht][c]{\wd\kbcirclebox}{\centering#1}}%
+%    \ifnum \value{#1}>9
+    \parbox[][\kbcircleboxwdht][c]{\wd\kbcirclebox}{\centering\scriptsize#1}%    
+%    \else
+%    \parbox[][\kbcircleboxwdht][c]{\wd\kbcirclebox}{\centering\footnotesize#1}%
+%    \fi
+  }%
+  \llap{\usebox{\kbcirclebox}}%
+}
+%\def\maru(#1){\kbcentcirc{#1}}
+\def\maru(#1){\leavevmode\raise0.1\zw\hbox{\kbcentcirc{#1}}}
+\newcounter{Fnum}
+\newcommand{\reFnum}{\setcounter{Fnum}{1}}
+\newcommand{\nextFnum}{\stepcounter{Fnum}}
+\newcommand{\backFnum}[1]{\addtocounter{Fnum}{-#1}}
+\newcommand{\moveFnum}[1]{\addtocounter{Fnum}{#1}}
+\newcommand{\wbFnum}{\kbcentcirc{\theFnum}}
+%\newcommand{\wbFnum}{\theFnum\stepcounter{Fnum}}
+%=======================
+\newcommand{\ellstr}[2]{
+  \unitlength=0.45mm
+  \begin{picture}(6,10)(0,2)
+    \thicklines
+    \qbezier(3,0)(0,0)(0,5)  
+    \qbezier(3,0)(6,0)(6,5)  
+    \qbezier(3,10)(0,10)(0,5)  
+    \qbezier(3,10)(6,10)(6,5)
+    \put(0.5,3){\small{\gtfamily #1}}  
+  \end{picture}
+  }
+% ==========================================================
+% マーク式解答欄自動番号振ボックス(\NAns:文中用 及び \MAns:数式環境用)
+% カウンターのリセットは\reAns
+% 使用例　>> \reAns
+%         >> 私はその時 \NAnss について、\NAns と \NAnsss について話した。
+%         >> \[ \frac{\sqrt{\MAnss}}{\sqrt3-i}=\MAnsss+\MAns i \]
+% ==========================================================
+
+% ==========================================================
+% マーク式解答欄自動番号振ボックス(\Ans{N} で、N桁のマーク式解答欄を自動作成。)
+% カウンターのリセットは\reAns
+% 使用例　>> \reAns
+%         >> 私はその時 \Ans{1} について、\Ans{2} と \Ans{3} について話した。
+%         >> \[ \frac{\sqrt{\Ans2}}{\sqrt3-i}=\Ans3+\Ans1 i \]
+%     注意：当然、引数が一桁の場合は、\Ans{1}を\Ans1、\Ans{7}を\Ans7のように{}は省略できます。
+% ==========================================================
+% \makeatletter
+% %\@addtoreset{AAns}{enumi}
+% \def\@kkatan#1{\ifcase#1\or ア\or イ\or ウ\or エ\or オ\or%
+% カ\or キ\or ク\or ケ\or コ\or サ\or シ\or ス\or セ\or ソ\or%
+% タ\or チ\or ツ\or テ\or ト\or ナ\or ニ\or ヌ\or ネ\or ノ\or%
+% ハ\or ヒ\or フ\or ヘ\or ホ\or マ\or ミ\or ム\or メ\or モ\or%
+% ヤ\or ユ\or ヨ\or ラ\or リ\or ル\or レ\or ロ\or ワ\or ヲ\or ン%
+% \else\@ctrerr\fi\relax}
+% \def\@DefaultAnsBoxWidth{1.3cm}
+% \def\@DefaultAnsBoxWidthInMath{1.2cm}
+% \newdimen\@defaultansboxwidth
+% \def\Ans#1{\begingroup%
+%   \ifmmode\@defaultansboxwidth\@DefaultAnsBoxWidthInMath%
+%   \else\@defaultansboxwidth\@DefaultAnsBoxWidth\fi
+%   \@Ans{#1}\@defaultansboxwidth}
+% \def\@Ans#1#2{%
+%   \@tempdima#2\relax\@tempcnta#1\relax\@tempcntb\z@%
+%   \setbox\z@\hbox{\bf\kern.5em%
+%     \@whilenum\@tempcntb<\@tempcnta\do{%
+%       \global\advance\c@Ans\@ne\@kkatan\c@Ans%
+%       \advance\@tempcntb\@ne}\kern.5em}%
+%   \@tempdimb\wd\z@%
+%   \ifdim\@tempdima<\@tempdimb\@tempdima\@tempdimb\fi%
+%   \ifmmode\;\else\ifmode\@killglue\ \fi\fi%
+%   \framebox{\@tempdima}{\box\z@}%
+%   \ifmmode\;else\ \fi\endgroup\ignorespaces}
+% \makeatother
+
+% カウンターを使う宣言
+\newcounter{AAns}
+\newcounter{tmpAnscnt}
+% カウンターの初期化
+\newcommand{\reAns}{\setcounter{AAns}{1}}
+% 戻したり進めたり
+\newcommand{\backAns}[1]{\addtocounter{AAns}{-#1}}
+\newcommand{\moveAns}[1]{\addtocounter{AAns}{#1}}
+% カウンターの保存と復帰
+\def\saveAnsNum{\setcounter{tmpAnscnt}{\value{AAns}}}
+\def\loadAnsNum{\setcounter{AAns}{\value{tmpAnscnt}}}
+%
+\setlength{\fboxrule}{1pt}
+% 失敗？考え直さないと・・・
+\newcommand{\cMark}[1]{\ifcase#1{marksheet 0}\or {marksheet 1}\or {marksheet 2}\or {marksheet 3}
+\or {marksheet 4}\or {marksheet 5}\or {marksheet 6}\or {marksheet 7}\or {marksheet 8}
+\or {marksheet 9}\or {marksheet a}\or {marksheet b}\or {marksheet c}\or {marksheet d}%
+\else\@ctrerr\fi\relax}%
+\newcommand{\jRoman}[1]{\ifcase#1\or \UTF{2160}\or \UTF{2161}\or \UTF{2162}\or \UTF{2163}\or \UTF{2164}\or%
+\UTF{2165}\or \UTF{2166}\or \UTF{2167}\or \UTF{2168}\or \UTF{2169}%
+\else\@ctrerr\fi\relax}%
+\newcommand{\kkatan}[1]{\ifcase#1\or ア\or イ\or ウ\or エ\or オ\or%
+カ\or キ\or ク\or ケ\or コ\or サ\or シ\or ス\or セ\or ソ\or%
+タ\or チ\or ツ\or テ\or ト\or ナ\or ニ\or ヌ\or ネ\or ノ\or%
+ハ\or ヒ\or フ\or ヘ\or ホ\or マ\or ミ\or ム\or メ\or モ\or%
+ヤ\or ユ\or ヨ\or ラ\or リ\or ル\or レ\or ロ\or ワ\or ヲ\or ン\or%
+ガ\or ギ\or グ\or ゲ\or ゴ\or ザ\or ジ\or ズ\or ゼ\or ゾ\or%
+ダ\or ヂ\or ヅ\or デ\or ド\or バ\or ビ\or ブ\or ベ\or ボ\or%
+パ\or ピ\or プ\or ペ\or ポ\or%
+あ\or い\or う\or え\or お\or か\or き\or く\or け\or こ\or%
+さ\or し\or す\or せ\or そ\or た\or ち\or つ\or て\or と\or%
+な\or に\or ぬ\or ね\or の\or は\or ひ\or ふ\or へ\or ほ\or%
+ま\or み\or む\or め\or も\or や\or ゆ\or よ\or%
+ら\or り\or る\or れ\or ろ\or わ\or を\or ん%
+\else\@ctrerr\fi\relax}%
+\newcommand{\nkatan}[1]{\ifcase#1\or%
+%[01]\or [02]\or [03]\or [04]\or [05]\or [06]\or [07]\or [08]\or [09]\or [10]\or%
+[1]\or [2]\or [3]\or [4]\or [5]\or [6]\or [7]\or [8]\or [9]\or [10]\or%
+[11]\or [12]\or [13]\or [14]\or [15]\or [16]\or [17]\or [18]\or [19]\or [20]\or%
+[21]\or [22]\or [23]\or [24]\or [25]\or [26]\or [27]\or [28]\or [29]\or [30]\or%
+[31]\or [32]\or [33]\or [34]\or [35]\or [36]\or [37]\or [38]\or [39]\or [40]\or%
+[41]\or [42]\or [43]\or [44]\or [45]\or [46]\or [47]\or [48]\or [49]\or [50]\or%
+[51]\or [52]\or [53]\or [54]\or [55]\or [56]\or [57]\or [58]\or [59]\or [60]\or%
+[61]\or [62]\or [63]\or [64]\or [65]\or [66]\or [67]\or [68]\or [69]\or [70]\or%
+[71]\or [72]\or [73]\or [74]\or [75]\or [76]\or [77]\or [78]\or [79]\or [80]\or%
+[81]\or [82]\or [83]\or [84]\or [85]\or [86]\or [87]\or [88]\or [89]\or [90]\or%
+[91]\or [92]\or [93]\or [94]\or [95]\or [96]\or [97]\or [98]\or [99]\or [100]\or%
+[101]\or [102]\or [103]\or [104]\or [105]\or [106]\or [107]\or [108]\or [109]\or [110]\or%
+[111]\or [112]\or [113]\or [114]\or [115]\or [116]\or [117]\or [118]\or [119]\or [120]\or%
+[121]\or [122]\or [123]\or [124]\or [125]\or [126]\or [127]\or [128]\or [129]\or [130]\or%
+\else\@ctrerr\fi\relax}%
+%\newcommand{\ntAns}{{\gt \kkatan{\value{AAns}}}\: \stepcounter{AAns}}
+%fboxrule はdefaultで 0.4pt
+%==============標準（センター式）マークシート用=============
+\newcommand{\ntAns}{${\gt \kkatan{\value{AAns}}}\: \stepcounter{AAns}$}
+\newcommand{\EAns}{\(\:\setlength{\fboxrule}{0.8pt}\framebox[2.8em][c]{\gt{\arabic{AAns}}}\:\stepcounter{AAns}\)}
+\newcommand{\EAnum}{\arabic{AAns}\stepcounter{AAns}}
+% 空
+\newcommand{\BAns}{\setlength{\fboxrule}{0.8pt}\framebox[3.2em][c]{\gt{ 　}}}
+% 標準文中用（NormalなAnsの形式）
+
+\def\kkatanG{\textgt{\kkatan{\value{AAns}}}\stepcounter{AAns}}
+\def\kkatanM{\kkatan{\value{AAns}}\stepcounter{AAns}}
+\def\AnsFBseprule(#1,#2){\fboxsep#1pt\setlength{\fboxrule}{#2pt}}
+\def\NAns{$\:\AnsFBseprule(1.6,0.8)\fbox{\hspace{0.8\zw}\kkatanG\hspace{0.8\zw}}\:$}
+\def\NAnss{$\:\AnsFBseprule(1.6,0.8)\fbox{\hspace{0.3\zw}\kkatanG\kkatanG\hspace{0.3\zw}}\:$}
+\def\NAnsss{$\:\AnsFBseprule(1.6,0.8)\fbox{\hspace{0.0\zw}\kkatanG\hspace{-0.2\zw}\kkatanG\hspace{-0.2\zw}\kkatanG\hspace{0.0\zw}}\:$}
+%\newcommand{\NAnsss}{\(\:\setlength{\fboxrule}{0.8pt}\framebox[3.8em][c]{\gt{\kkatan{\value{AAns}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAnssss}{\(\:\setlength{\fboxrule}{0.8pt}\framebox[4.2em][c]{\gt {\kkatan{\value{AAns}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAnsssss}{\(\:\setlength{\fboxrule}{0.8pt}\framebox[5.2em][c]{\gt {\kkatan{\value{AAns}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAnssssss}{\(\:\setlength{\fboxrule}{0.8pt}\framebox[6em][c]{\gt {\kkatan{\value{AAns}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAnsssssss}{\(\:\setlength{\fboxrule}{0.8pt}\framebox[7.2em][c]{\gt {\kkatan{\value{AAns}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+}\: \stepcounter{AAns}\)}
+\def\SAns{\(\:\AnsFBseprule(0.8,0.8)\fbox{\AnsFBseprule(0.8,0.4)\fbox{\hspace{0.8\zw}\textgt{\kkatan{\value{AAns}}}\hspace{0.8\zw}}}\:\stepcounter{AAns}\)}
+\def\SAnsr{\(\:\AnsFBseprule(0.8,0.4)\fbox{\AnsFBseprule(0.8,0.4)\fbox{\hspace{0.8\zw}\kkatan{\value{AAns}}\hspace{0.8\zw}}}\:\stepcounter{AAns}\)}
+% 二度目は非ゴシック
+\def\NAnsr{$\:\AnsFBseprule(1.6,0.4)\fbox{\hspace{0.8\zw}\kkatanM\hspace{0.8\zw}}\:$}
+\def\NAnssr{$\:\AnsFBseprule(1.6,0.4)\fbox{\hspace{0.3\zw}\kkatanM\kkatanG\hspace{0.3\zw}}\:$}
+\def\NAnsssr{$\:\AnsFBseprule(1.6,0.4)\fbox{\hspace{0.0\zw}\kkatanM\hspace{-0.2\zw}\kkatanG\hspace{-0.2\zw}\kkatanG\hspace{0.0\zw}}\:$}
+\newcommand{\NAnssssr}{\(\:\setlength{\fboxrule}{0.4pt}\framebox[4.2em][c]{{\kkatan{\value{AAns}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAnsssssr}{\(\:\setlength{\fboxrule}{0.4pt}\framebox[5.2em][c]{{\kkatan{\value{AAns}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAnssssssr}{\(\:\setlength{\fboxrule}{0.4pt}\framebox[6em][c]{{\kkatan{\value{AAns}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+% 数式中用（Math環境なAnsの形式）
+\def\MAns{\:\AnsFBseprule(1.6,0.8)\fbox{\hspace{0.8\zw}\kkatanG\hspace{0.8\zw}}\:}
+\def\MAnss{\:\AnsFBseprule(1.6,0.8)\fbox{\hspace{0.3\zw}\kkatanG\kkatanG\hspace{0.3\zw}}\:}
+\def\MAnsss{\:\AnsFBseprule(1.6,0.8)\fbox{\hspace{0.0\zw}\kkatanG\hspace{-0.2\zw}\kkatanG\hspace{-0.2\zw}\kkatanG\hspace{0.0\zw}}\:}
+\newcommand{\MAnssss}{\:\setlength{\fboxrule}{0.8pt}\framebox[4.2em][c]{\gt {\kkatan{\value{AAns}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAnsssss}{\:\setlength{\fboxrule}{0.8pt}\framebox[5.2em][c]{\gt {\kkatan{\value{AAns}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAnssssss}{\:\setlength{\fboxrule}{0.8pt}\framebox[6em][c]{\gt {\kkatan{\value{AAns}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAnsssssss}{\:\setlength{\fboxrule}{0.8pt}\framebox[7.2em][c]{\gt {\kkatan{\value{AAns}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{\gt{\kkatan{\value{AAns}}}}%
+}\: \stepcounter{AAns}}
+% 二度目は非ゴシック
+\def\MAnsr{\:\AnsFBseprule(1.6,0.4)\fbox{\hspace{0.8\zw}\kkatanM\hspace{0.8\zw}}\:}
+\def\MAnssr{\:\AnsFBseprule(1.6,0.4)\fbox{\hspace{0.3\zw}\kkatanM\kkatanG\hspace{0.3\zw}}\:}
+\def\MAnsssr{\:\AnsFBseprule(1.6,0.4)\fbox{\hspace{0.0\zw}\kkatanM\hspace{-0.2\zw}\kkatanG\hspace{-0.2\zw}\kkatanG\hspace{0.0\zw}}\:}
+\newcommand{\MAnssssr}{\:\framebox[4.2em][c]{{\kkatan{\value{AAns}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAnsssssr}{\:\framebox[5.2em][c]{{\kkatan{\value{AAns}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAnssssssr}{\:\framebox[6em][c]{{\kkatan{\value{AAns}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}\stepcounter{AAns}{{\kkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAnsssssssr}{\:\framebox[7.2em][c]{{\kkatan{\value{AAns}}}%
+\stepcounter{AAns}{{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{{\kkatan{\value{AAns}}}}%
+\stepcounter{AAns}{{\kkatan{\value{AAns}}}}%
+}\: \stepcounter{AAns}}
+%==============標準（センター式）マークシート用=============
+%==============１００マークシート用=============
+\newcommand{\ntAAns}{${\gt \nkatan{\value{AAns}}}\: \stepcounter{AAns}$}
+\newcommand{\BAAns}{\setlength{\fboxrule}{0.8pt}\framebox[3.2em][c]{\gt{ 　}}}
+\newcommand{\EAAns}{\(\:\setlength{\fboxrule}{0.8pt}\framebox[2.8em][c]{\gt{\arabic{AAns}}}\:\stepcounter{AAns}\)}
+\newcommand{\EAAnum}{\arabic{AAns}\stepcounter{AAns}}
+\newcommand{\NAAnsP}{{\small\sf\nkatan{\value{AAns}}}\stepcounter{AAns}}
+\newcommand{\NAAns}{\(\:\setlength{\fboxrule}{0.6pt}\framebox[2.8em][c]{\small\sf{\nkatan{\value{AAns}}}}\:\stepcounter{AAns}\)}
+\newcommand{\NAAnss}{\(\:\setlength{\fboxrule}{0.6pt}\framebox[3.8em][c]{\small\sf{\nkatan{\value{AAns}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAAnsss}{\(\:\setlength{\fboxrule}{0.6pt}\framebox[5.2em][c]{\small\sf{\nkatan{\value{AAns}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAAnssss}{\(\:\setlength{\fboxrule}{0.6pt}\framebox[6.6em][c]{\gt {\nkatan{\value{AAns}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAAnsssss}{\(\:\setlength{\fboxrule}{0.6pt}\framebox[8.0em][c]{\gt {\nkatan{\value{AAns}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAAnssssss}{\(\:\setlength{\fboxrule}{0.6pt}\framebox[9.4em][c]{\gt {\nkatan{\value{AAns}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\small\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAAnsr}{\(\:\setlength{\fboxrule}{0.2pt}\framebox[3.2em][c]{\small\it{\nkatan{\value{AAns}}}}\:\stepcounter{AAns}\)}
+\newcommand{\NAAnssr}{\(\:\setlength{\fboxrule}{0.2pt}\framebox[3.8em][c]{\small\it{\nkatan{\value{AAns}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAAnsssr}{\(\:\setlength{\fboxrule}{0.2pt}\framebox[5.2em][c]{\small\it{\nkatan{\value{AAns}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAAnssssr}{\(\:\setlength{\fboxrule}{0.2pt}\framebox[6.6em][c]{\small\it{\nkatan{\value{AAns}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAAnsssssr}{\(\:\setlength{\fboxrule}{0.2pt}\framebox[8.0em][c]{\small\it{\nkatan{\value{AAns}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\NAAnssssssr}{\(\:\setlength{\fboxrule}{0.2pt}\framebox[9.4em][c]{\small\it{\nkatan{\value{AAns}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}\)}
+\newcommand{\MAAns}{\:\setlength{\fboxrule}{0.6pt}\framebox[2.8em][c]{\small\sf \nkatan{\value{AAns}}}\:\stepcounter{AAns}}
+\newcommand{\MAAnss}{\:\setlength{\fboxrule}{0.6pt}\framebox[3.8em][c]{\small\sf{\nkatan{\value{AAns}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAAnsss}{\:\setlength{\fboxrule}{0.6pt}\framebox[5.2em][c]{\small\sf {\nkatan{\value{AAns}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAAnssss}{\:\setlength{\fboxrule}{0.6pt}\framebox[6.6em][c]{\small\sf {\nkatan{\value{AAns}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAAnsssss}{\:\setlength{\fboxrule}{0.6pt}\framebox[8.0em][c]{\small\sf {\nkatan{\value{AAns}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAAnssssss}{\:\setlength{\fboxrule}{0.6pt}\framebox[9.4em][c]{\small\sf {\nkatan{\value{AAns}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAAnsr}{\:\setlength{\fboxrule}{0.3pt}\framebox[2.8em][c]{\small\it\nkatan{\value{AAns}}}\:\stepcounter{AAns}}
+\newcommand{\MAAnssr}{\:\setlength{\fboxrule}{0.3pt}\framebox[3.8em][c]{\small\it{\nkatan{\value{AAns}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAAnsssr}{\:\setlength{\fboxrule}{0.3pt}\framebox[5.2em][c]{\small\it{\nkatan{\value{AAns}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAAnssssr}{\:\setlength{\fboxrule}{0.3pt}\framebox[6.6em][c]{\small\it{\nkatan{\value{AAns}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAAnsssssr}{\:\setlength{\fboxrule}{0.3pt}\framebox[8.0em][c]{\small\it{\nkatan{\value{AAns}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\MAAnssssssr}{\:\setlength{\fboxrule}{0.3pt}\framebox[9.4em][c]{\small\it{\nkatan{\value{AAns}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}\stepcounter{AAns}{{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\sMAAns}{\:\setlength{\fboxrule}{0.6pt}\setlength{\fboxsep}{1pt}\framebox[1.4em][c]{\sf\scriptsize \nkatan{\value{AAns}}}\:\stepcounter{AAns}}
+\newcommand{\sMAAnss}{\:\setlength{\fboxrule}{0.6pt}\setlength{\fboxsep}{1pt}\framebox[2.8em][c]{\sf\scriptsize{\nkatan{\value{AAns}}}\stepcounter{AAns}{\sf{\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+%\fboxsep のdefaultは 3pt
+\newcommand{\sMAns}{\:\setlength{\fboxrule}{0.8pt}\setlength{\fboxsep}{1pt}\framebox[1.1em][c]{\small\gt \nkatan{\value{AAns}}}\: \stepcounter{AAns}}
+\newcommand{\sMAnsr}{\:\setlength{\fboxsep}{1pt}\framebox[1.1em][c]{\small\gt \nkatan{\value{AAns}}}\: \stepcounter{AAns}}
+%\newcommand{\sMAns}{{\fbox{\rule[-0.05cm]{0cm}{0.2cm}{\gt\nkatan{\value{AAns}}}}}\: \stepcounter{AAns}}
+\newcommand{\Mkbs}[1]{{}^{\nkatan{\value{AAns}}}\fbox{\rule[-0.1cm]{0cm}{0.4cm} \hspace{#1}}\stepcounter{AAns}}
+\newcommand{\Nkbs}[1]{${}^{\nkatan{\value{AAns}}}$\fbox{\rule[-0.1cm]{0cm}{0.4cm} \hspace{#1}}\stepcounter{AAns}}
+\newcommand{\Mkbss}[1]{{}^{\nkatan{\value{AAns}}}\fbox{\rule[0.05cm]{0cm}{0.2cm} \hspace{#1}}\stepcounter{AAns}}
+\newcommand{\Nkbss}[1]{${}^{\nkatan{\value{AAns}}}$\fbox{\rule[0.05cm]{0cm}{0.2cm} \hspace{#1}}\stepcounter{AAns}}
+
+\newcommand{\sentaku}[2]{
+        \left\{
+           \begin{array}{l}
+                1)\; #1 \\
+                2)\; #2 
+           \end{array}
+        \right\}
+        }
+
+% \kaku{90} とすれば、「９０゜」を表示します。
+\newcommand{\kaku}[1]{#1^{\circ}}
+
+% \ora{a} とすれば、ベクトルaを表示します。
+\newcommand{\ora}[1]{\overrightarrow{#1}}
+\newcommand{\douchi}{\Leftrightarrow}
+\newcommand{\ldouchi}{\Longleftrightarrow}
+\newcommand{\dsp}[1]{\displaystyle{#1}}
+% \xyza とすれば、座標軸を表示します。
+\newcommand{\msquare}{
+   \unitlength=.25mm
+   \begin{picture}(10,16)(-4,-6)
+   \bezier{30}(-10, -10)(0, -10)(10, -10)
+   \bezier{30}(-10, -10)(-10, 0)(-10, 10)
+   \bezier{30}(10, 10)(10, 0)(10, -10)
+   \bezier{30}(10, 10)(0, 10)(-10, 10)
+   \end{picture}
+   }
+   
+\newcommand{\mrectang}{
+   \unitlength=.25mm
+   \begin{picture}(30,16)(-4,-6)
+   \bezier{30}(-10, -10)(0, -10)(10, -10)
+   \bezier{30}(-10, -10)(-10, 0)(-10, 10)
+   \bezier{10}(10, 10)(10, 0)(10, -10)
+   \bezier{30}(10, 10)(0, 10)(-10, 10)
+   \bezier{30}(10, -10)(20, -10)(30, -10)
+   \bezier{30}(10, 10)(20, 10)(30, 10)
+   \bezier{30}(30, 10)(30, 0)(30, -10)
+   \end{picture}
+   }
+
+\newcommand{\xyza}{
+   \unitlength=0.5mm
+   \begin{picture}(100,100)(-50,-50)
+   \put(0,-50){\vector(0,1){100}}
+   \put(-50,0){\vector(1,0){100}}
+   \end{picture}
+   }
+\newcommand{\xyzss}{
+   \unitlength=0.5mm
+   \begin{picture}(100,100)(-50,-50)
+   \put(0,-50){\vector(0,1){100}}
+   \put(-50,0){\vector(1,0){100}}
+   \bezier{80}(-50, 5)(0, 5)(50, 5)
+   \bezier{80}(-50,10)(0,10)(50,10)
+   \bezier{80}(-50,15)(0,15)(50,15)
+   \bezier{80}(-50,20)(0,20)(50,20)
+   \bezier{80}(-50,25)(0,25)(50,25)
+   \bezier{80}(-50,30)(0,30)(50,30)
+   \bezier{80}(-50,35)(0,35)(50,35)
+   \bezier{80}(-50,40)(0,40)(50,40)
+   \bezier{80}(-50,45)(0,45)(50,45)
+   \bezier{80}(-50, -5)(0, -5)(50, -5)
+   \bezier{80}(-50,-10)(0,-10)(50,-10)
+   \bezier{80}(-50,-15)(0,-15)(50,-15)
+   \bezier{80}(-50,-20)(0,-20)(50,-20)
+   \bezier{80}(-50,-25)(0,-25)(50,-25)
+   \bezier{80}(-50,-30)(0,-30)(50,-30)
+   \bezier{80}(-50,-35)(0,-35)(50,-35)
+   \bezier{80}(-50,-40)(0,-40)(50,-40)
+   \bezier{80}(-50,-45)(0,-45)(50,-45)
+   \bezier{80}( 5,-50)( 5,0)( 5,50)
+   \bezier{80}(10,-50)(10,0)(10,50)
+   \bezier{80}(15,-50)(15,0)(15,50)
+   \bezier{80}(20,-50)(20,0)(20,50)
+   \bezier{80}(25,-50)(25,0)(25,50)
+   \bezier{80}(30,-50)(30,0)(30,50)
+   \bezier{80}(35,-50)(35,0)(35,50)
+   \bezier{80}(40,-50)(40,0)(40,50)
+   \bezier{80}(45,-50)(45,0)(45,50)
+   \bezier{80}( -5,-50)( -5,0)( -5,50)
+   \bezier{80}(-10,-50)(-10,0)(-10,50)
+   \bezier{80}(-15,-50)(-15,0)(-15,50)
+   \bezier{80}(-20,-50)(-20,0)(-20,50)
+   \bezier{80}(-25,-50)(-25,0)(-25,50)
+   \bezier{80}(-30,-50)(-30,0)(-30,50)
+   \bezier{80}(-35,-50)(-35,0)(-35,50)
+   \bezier{80}(-40,-50)(-40,0)(-40,50)
+   \bezier{80}(-45,-50)(-45,0)(-45,50)
+   \end{picture}
+   }
+   \newcommand{\xyzssx}{
+   \unitlength=0.7mm
+   \begin{picture}(100,100)(-50,-50)
+   \put(0,-50){\vector(0,1){100}}
+   \put(-50,0){\vector(1,0){100}}
+%   \bezier{80}(-50, 5)(0, 5)(50, 5)
+   \bezier{80}(-50,10)(0,10)(50,10)
+%   \bezier{80}(-50,15)(0,15)(50,15)
+   \bezier{80}(-50,20)(0,20)(50,20)
+%   \bezier{80}(-50,25)(0,25)(50,25)
+   \bezier{80}(-50,30)(0,30)(50,30)
+%   \bezier{80}(-50,35)(0,35)(50,35)
+   \bezier{80}(-50,40)(0,40)(50,40)
+%   \bezier{80}(-50,45)(0,45)(50,45)
+%   \bezier{80}(-50, -5)(0, -5)(50, -5)
+   \bezier{80}(-50,-10)(0,-10)(50,-10)
+%   \bezier{80}(-50,-15)(0,-15)(50,-15)
+   \bezier{80}(-50,-20)(0,-20)(50,-20)
+%   \bezier{80}(-50,-25)(0,-25)(50,-25)
+   \bezier{80}(-50,-30)(0,-30)(50,-30)
+%   \bezier{80}(-50,-35)(0,-35)(50,-35)
+   \bezier{80}(-50,-40)(0,-40)(50,-40)
+%   \bezier{80}(-50,-45)(0,-45)(50,-45)
+%   \bezier{80}( 5,-50)( 5,0)( 5,50)
+   \bezier{80}(10,-50)(10,0)(10,50)
+%   \bezier{80}(15,-50)(15,0)(15,50)
+   \bezier{80}(20,-50)(20,0)(20,50)
+%   \bezier{80}(25,-50)(25,0)(25,50)
+   \bezier{80}(30,-50)(30,0)(30,50)
+%   \bezier{80}(35,-50)(35,0)(35,50)
+   \bezier{80}(40,-50)(40,0)(40,50)
+%   \bezier{80}(45,-50)(45,0)(45,50)
+%   \bezier{80}( -5,-50)( -5,0)( -5,50)
+   \bezier{80}(-10,-50)(-10,0)(-10,50)
+%   \bezier{80}(-15,-50)(-15,0)(-15,50)
+   \bezier{80}(-20,-50)(-20,0)(-20,50)
+%   \bezier{80}(-25,-50)(-25,0)(-25,50)
+   \bezier{80}(-30,-50)(-30,0)(-30,50)
+%   \bezier{80}(-35,-50)(-35,0)(-35,50)
+   \bezier{80}(-40,-50)(-40,0)(-40,50)
+%   \bezier{80}(-45,-50)(-45,0)(-45,50)
+   \end{picture}
+   }
+\newcommand{\xyzb}{
+   \unitlength=0.7mm
+   \begin{picture}(100,100)(-50,-50)
+   \put(0,-50){\vector(0,1){100}}
+   \put(-50,0){\vector(1,0){100}}
+   \end{picture}
+   }
+\newcommand{\xyzc}{
+   \unitlength=0.4mm
+   \begin{picture}(100,100)(-50,-50)
+   \put(0,-50){\vector(0,1){100}}
+   \put(-50,0){\vector(1,0){100}}
+   \end{picture}
+   }
+\newcommand{\xyzs}{
+   \unitlength=0.4mm
+   \begin{picture}(120,200)(-60,-100)
+   \put(0,-100){\vector(0,1){200}}
+   \put(-60,0){\vector(1,0){120}}
+   \end{picture}
+   }
+\newcommand{\xyzsm}{
+   \unitlength=0.4mm
+   \begin{picture}(120,200)(-60,-100)
+   \put(0,-105){\vector(0,1){210}}
+   \put(-65,0){\vector(1,0){130}}
+
+   \bezier{60}(-60,10)(0,10)(60,10)
+   \bezier{60}(-60,20)(0,20)(60,20)
+   \bezier{60}(-60,30)(0,30)(60,30)
+   \bezier{60}(-60,40)(0,40)(60,40)
+   \bezier{60}(-60,50)(0,50)(60,50)
+   \bezier{60}(-60,60)(0,60)(60,60)
+   \bezier{60}(-60,70)(0,70)(60,70)
+   \bezier{60}(-60,80)(0,80)(60,80)
+   \bezier{60}(-60,90)(0,90)(60,90)
+   \bezier{60}(-60,100)(0,100)(60,100)
+   \bezier{60}(-60,-10)(0,-10)(60,-10)
+   \bezier{60}(-60,-20)(0,-20)(60,-20)
+   \bezier{60}(-60,-30)(0,-30)(60,-30)
+   \bezier{60}(-60,-40)(0,-40)(60,-40)
+   \bezier{60}(-60,-50)(0,-50)(60,-50)
+   \bezier{60}(-60,-60)(0,-60)(60,-60)
+   \bezier{60}(-60,-70)(0,-70)(60,-70)
+   \bezier{60}(-60,-80)(0,-80)(60,-80)
+   \bezier{60}(-60,-90)(0,-90)(60,-90)
+   \bezier{60}(-60,-100)(0,-100)(60,-100)
+
+   \bezier{120}(-60,-100)(-60,0)(-60,100)
+   \bezier{120}(-50,-100)(-50,0)(-50,100)
+   \bezier{120}(-40,-100)(-40,0)(-40,100)
+   \bezier{120}(-30,-100)(-30,0)(-30,100)
+   \bezier{120}(-20,-100)(-20,0)(-20,100)
+   \bezier{120}(-10,-100)(-10,0)(-10,100)
+   \bezier{120}(10,-100)(10,0)(10,100)
+   \bezier{120}(20,-100)(20,0)(20,100)
+   \bezier{120}(30,-100)(30,0)(30,100)
+   \bezier{120}(40,-100)(40,0)(40,100)
+   \bezier{120}(50,-100)(50,0)(50,100)
+   \bezier{120}(60,-100)(60,0)(60,100)
+
+   \end{picture}
+   }
+
+\newcommand{\xyzam}{
+   \unitlength=0.4mm
+   \begin{picture}(120,160)(-60,-80)
+   \bezier{60}(-60,0)(0,0)(60,0)
+   \bezier{60}(-60,10)(0,10)(60,10)
+   \bezier{60}(-60,20)(0,20)(60,20)
+   \bezier{60}(-60,30)(0,30)(60,30)
+   \bezier{60}(-60,40)(0,40)(60,40)
+   \bezier{60}(-60,50)(0,50)(60,50)
+   \bezier{60}(-60,60)(0,60)(60,60)
+   \bezier{60}(-60,70)(0,70)(60,70)
+   \bezier{60}(-60,80)(0,80)(60,80)
+%   \bezier{60}(-60,90)(0,90)(60,90)
+%   \bezier{60}(-60,100)(0,100)(60,100)
+   \bezier{60}(-60,-10)(0,-10)(60,-10)
+   \bezier{60}(-60,-20)(0,-20)(60,-20)
+   \bezier{60}(-60,-30)(0,-30)(60,-30)
+   \bezier{60}(-60,-40)(0,-40)(60,-40)
+   \bezier{60}(-60,-50)(0,-50)(60,-50)
+   \bezier{60}(-60,-60)(0,-60)(60,-60)
+   \bezier{60}(-60,-70)(0,-70)(60,-70)
+   \bezier{60}(-60,-80)(0,-80)(60,-80)
+%   \bezier{60}(-60,-90)(0,-90)(60,-90)
+%   \bezier{60}(-60,-100)(0,-100)(60,-100)
+
+   \bezier{80}(0,-80)(0,0)(0,80)
+   \bezier{80}(-60,-80)(-60,0)(-60,80)
+   \bezier{80}(-50,-80)(-50,0)(-50,80)
+   \bezier{80}(-40,-80)(-40,0)(-40,80)
+   \bezier{80}(-30,-80)(-30,0)(-30,80)
+   \bezier{80}(-20,-80)(-20,0)(-20,80)
+   \bezier{80}(-10,-80)(-10,0)(-10,80)
+   \bezier{80}(10,-80)(10,0)(10,80)
+   \bezier{80}(20,-80)(20,0)(20,80)
+   \bezier{80}(30,-80)(30,0)(30,80)
+   \bezier{80}(40,-80)(40,0)(40,80)
+   \bezier{80}(50,-80)(50,0)(50,80)
+   \bezier{80}(60,-80)(60,0)(60,80)
+
+   \end{picture}
+   }
+
+\newcommand{\xyzaslim}{
+   \unitlength=0.5mm
+   \begin{picture}(100,200)(-50,-100)
+   \put(0,-100){\vector(0,1){200}}
+   \put(-50,0){\vector(1,0){100}}
+   \end{picture}
+   }
+
+\newcommand{\xyzas}{
+   \unitlength=0.5mm
+   \begin{picture}(60,60)(-30,-30)
+   \put(0,-30){\vector(0,1){60}}
+   \put(-30,0){\vector(1,0){60}}
+   \end{picture}
+   }
+\newcommand{\xytr}{
+   \unitlength=0.5mm
+   \begin{picture}(200,54)(-20,-27)
+   \put(0,-27){\vector(0,1){54}}
+   \put(-20,0){\vector(1,0){200}}
+   \bezier{50}(-20,12)(80,12)(180,12)
+   \bezier{50}(-20,-12)(80,-12)(180,-12)
+   \bezier{50}(-20,24)(80,24)(180,24)
+   \bezier{50}(-20,-24)(80,-24)(180,-24)
+
+   \bezier{25}(38,-25)(38,0)(38,25)
+   \bezier{25}(76,-25)(76,0)(76,25)
+   \bezier{25}(114,-25)(114,0)(114,25)
+   \bezier{25}(152,-25)(152,0)(152,25)
+
+   \end{picture}
+   }
+
+\newcommand{\xytri}{
+   \unitlength=0.5mm
+   \begin{picture}(200,100)(-20,-50)
+   \put(0,-50){\vector(0,1){100}}
+   \put(-20,0){\vector(1,0){200}}
+   \end{picture}
+   }
+\newcommand{\xytrii}{
+   \unitlength=0.5mm
+   \begin{picture}(200,100)(-20,-50)
+   \put(0,-50){\vector(0,1){100}}
+   \put(-20,0){\vector(1,0){200}}
+   \bezier{50}(-20,16)(80,16)(180,16)
+   \bezier{50}(-20,-16)(80,-16)(180,-16)
+   \bezier{50}(-20,-48)(80,-48)(180,-48)
+   \bezier{50}(-20,48)(80,48)(180,48)
+   \bezier{50}(-20,32)(80,32)(180,32)
+   \bezier{50}(-20,-32)(80,-32)(180,-32)
+
+   \bezier{25}(50,-50)(50,0)(50,50)
+   \bezier{25}(100,-50)(100,0)(100,50)
+   \bezier{25}(150,-50)(150,0)(150,50)
+
+   \end{picture}
+   }
+\newcommand{\xytriii}{
+   \unitlength=0.5mm
+   \begin{picture}(200,100)(-20,-50)
+   \put(0,-50){\vector(0,1){100}}
+   \put(-20,0){\vector(1,0){200}}
+   \bezier{50}(-20,12)(80,12)(180,12)
+   \bezier{50}(-20,-12)(80,-12)(180,-12)
+   \bezier{50}(-20,-48)(80,-48)(180,-48)
+   \bezier{50}(-20,48)(80,48)(180,48)
+   \bezier{50}(-20,24)(80,24)(180,24)
+   \bezier{50}(-20,-24)(80,-24)(180,-24)
+
+   \bezier{25}(38,-50)(38,0)(38,50)
+   \bezier{25}(76,-50)(76,0)(76,50)
+   \bezier{25}(152,-50)(152,0)(152,50)
+
+   \end{picture}
+   }
+\newcommand{\xytrim}{
+   \unitlength=0.5mm
+   \begin{picture}(200,100)(-100,-50)
+   \put(0,-50){\vector(0,1){100}}
+   \put(-100,0){\vector(1,0){200}}
+   \end{picture}
+   }
+\newcommand{\tritab}{
+   \begin{tabular}{|c||c||c|c|c||c||c|c|c||c|} \hline
+      $\theta$ & \hspace{2mm}$\kaku0$\hspace{1.5mm} & $\hspace{2mm}\kaku{30}\hspace{1.5mm}$ & 　　　&　　　 &　　　 &　　　 &　　　 &　　　 &　　　  \\ \hline\hline
+      & & & & & & & & & \\
+      $ \sin\theta $ & & $\fracm{1}{2}$ & & & & & & &  \\ 
+      & & & & & & & & & \\ \hline
+      & & & & & & & & & \\
+      $ \cos\theta $ & & $\fracm{\sqrt3}{2}$ & & & & & & &  \\
+      & & & & & & & & & \\ \hline
+      & & & & & & & & & \\
+      $ \tan\theta $ & & $\fracm{1}{\sqrt3}$ & & & & & & &  \\
+      & & & & & & & & & \\ \hline
+   \end{tabular}
+   }
+\newcommand{\tritabm}{
+   \begin{tabular}{|c||c||c|c|c||c||c|c|c||c|} \hline
+      $\theta$ & \hspace{.3mm}$\kaku0$\hspace{-1mm} & $\hspace{-.1mm}\kaku{30}\hspace{-1mm}$ 
+      &　　&　　&　　&　　　 &　　　 &　　　 &　　\\ \hline\hline
+      & & & & & & & & & \\
+      $ \sin\theta $ & & \hspace{-1mm}$\fracm{1}{2}$\hspace{-1mm} & & & & & & &  \\ 
+      & & & & & & & & & \\ \hline
+      & & & & & & & & & \\
+      $ \cos\theta $ & & \hspace{-1mm}$\fracm{\sqrt3}{2}$\hspace{-1mm} & & & & & & &  \\
+      & & & & & & & & & \\ \hline
+      & & & & & & & & & \\
+      $ \tan\theta $ & & \hspace{-1mm}$\fracm{1}{\sqrt3}$\hspace{-1mm} & & & & & & &  \\
+      & & & & & & & & & \\ \hline
+   \end{tabular}
+   }
+
+% ==========================================================
+\renewcommand{\leqq}{\!\!\def\arraystretch{.1} 
+                   \begin{array}{c} < \\ = \\ \end{array}
+                   \def\arraystretch{1}\!\!}
+% ==========================================================
+% ==========================================================
+\renewcommand{\geqq}{\!\!\def\arraystretch{.1} 
+                   \begin{array}{c} > \\ = \\ \end{array}
+                   \def\arraystretch{1}\!\!}
+% ==========================================================
+
+\newcommand{\kakuhani}[3]{\kaku{#1}\leqq#2<\kaku{#3}}
+\newcommand{\hani}[3]{#1 \leqq #2 \leqq #3}
+\newcommand{\renritsu}[2]{
+           \displaystyle{
+             \left\{
+              \begin{array}{l}
+               #1 \\
+               #2 \\
+              \end{array}
+             \right.
+            }}
+
+%=====================================================
+\newcommand{\hougant}{
+   \begin{picture}(300,300)(-150,-150)
+      \thinlines
+      \multiput(-150,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(-135,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(-120,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(-105,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( -90,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( -75,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( -60,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( -45,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( -30,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( -15,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(150,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(135,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(120,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(105,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( 90,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( 75,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( 60,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( 45,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( 30,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( 15,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(-150,-150)(3,0){100}{\line(0,1){1}}
+      \multiput(-150,-135)(3,0){100}{\line(0,1){1}}
+      \multiput(-150,-120)(3,0){100}{\line(0,1){1}}
+      \multiput(-150,-105)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, -90)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, -75)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, -60)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, -45)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, -30)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, -15)(3,0){100}{\line(0,1){1}}
+      \multiput(-150,150)(3,0){100}{\line(0,1){1}}
+      \multiput(-150,135)(3,0){100}{\line(0,1){1}}
+      \multiput(-150,120)(3,0){100}{\line(0,1){1}}
+      \multiput(-150,105)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, 90)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, 75)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, 60)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, 45)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, 30)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, 15)(3,0){100}{\line(0,1){1}}
+      \put(-150,0){\vector(1,0){300}}
+      \put(0,-150){\vector(0,1){300}}
+   \end{picture}
+}
+%=====================================================
+\newcommand{\houganf}{
+   \begin{picture}(300,300)(-150,-150)
+      \multiput(-150,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(-120,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( -90,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( -60,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( -30,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(150,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(120,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( 90,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( 60,-150)(0,3){100}{\line(0,1){1}}
+      \multiput( 30,-150)(0,3){100}{\line(0,1){1}}
+      \multiput(-150,-150)(3,0){100}{\line(0,1){1}}
+      \multiput(-150,-120)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, -90)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, -60)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, -30)(3,0){100}{\line(0,1){1}}
+      \multiput(-150,150)(3,0){100}{\line(0,1){1}}
+      \multiput(-150,120)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, 90)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, 60)(3,0){100}{\line(0,1){1}}
+      \multiput(-150, 30)(3,0){100}{\line(0,1){1}}
+      \put(-150,0){\vector(1,0){300}}
+      \put(0,-150){\vector(0,1){300}}
+   \end{picture}
+}
+
+%=====================================================
+\def\OtokuniSym(#1)[#2]{%------------------------------------------
+\begin{mplibcode}
+\mpBaseSize(#1mm)\mpHandWriteSet\mpHandWriteOn\mpPenSize(0.3)
+\mpPointsDef O(0,0)A(1,1)B(-1,-1)C(-5/3,1)D(5/3,-1).
+\mpGdivPoint AB 17:7 P\mpGdivPoint AB 7:17 Q
+fill (fullcircle scaled 2length(z.A-z.Q)) shifted z.P withcolor 0.4white;
+fill (fullcircle scaled 2length(z.A-z.Q)) shifted z.Q withcolor 0.4white;
+\mpGfill OAC\mpGfill OBD
+\mpPenSize(#2)\mpGlineC CD[white]\mpGlineC AB[white]
+\mpPlaneClip (10/3,2)(-5/3,-1)
+\end{mplibcode}%
+}%-------------------------------------------------------------
