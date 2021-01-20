@@ -1,0 +1,2295 @@
+\ProvidesPackage{mpgraphR}[2018/3/25 v0.5]% mpGraphR.sty Package file
+% for MetaPost with LuaLaTeX... Renewal
+\mplibsetformat{metafun}
+%\mplibnumbersystem{decimal}% 十進の多倍長浮動小数点数... 凄え時間かかる
+%\mplibnumbersystem{double}% 十進の多倍長浮動小数点数... 凄え時間かかる
+\mplibtextextlabel{enable}
+% everymplib options
+%\mplibnumbersystem{double}
+%\mplibnumbersystem{decimal}
+\everymplib{beginfig(1);%input mpcolornames;
+%numberprecision:=10;
+if numbersystem="decimal": numberprecision := 64; fi
+%numberprecision:=900;% 時間かかり過ぎ
+numeric w;w=3mm;\mpHandWriteSet%
+}%
+\everyendmplib{endfig;}
+%
+%\newjfontfamily{\jDarts}[YokoFeatures={JFM=jlreq},TateFeatures={JFM=jlreqv},]{darts-font}% 遊びメモ書き
+%\newjfontfamily{\jAsobi}[YokoFeatures={JFM=jlreq},TateFeatures={JFM=jlreqv},]{AsobiMemogaki}% 遊びメモ書き
+%\newjfontfamily{\jShigoto}[YokoFeatures={JFM=jlreq},TateFeatures={JFM=jlreqv},]{ShigotoMemogaki}% 仕事メモ書き
+%\newjfontfamily{\jRiiTegakiFude}[YokoFeatures={JFM=jlreq},TateFeatures={JFM=jlreqv},]{RiiTegakiFude}% りい手書きの筆
+% handwriting mode on/off
+\def\mpHandWriteOn{hwmode:=true;}
+\def\mpHandWriteOff{hwmode:=false;}
+\def\mpHandWriteSwitch(#1){if #1=0:hwmode:=false;else:hwmode:=true;fi;}
+%
+% Size Draw Basic length, Pen circle Size,...
+\def\mpBaseSize(#1){w:=#1;}
+\def\mpPenSize(#1){pickup pencircle scaled (#1pt);}
+\def\mpPenSizeS(#1){pickup pencircle scaled (#1);}
+%drawoptions(withpen pencircle scaled #1mm);}
+\def\mpPenColor(#1){drawoptions(withcolor #1);}
+\def\mpPenColorCMYK(#1,#2,#3,#4){drawoptions(withcmykcolor (#1,#2,#3,#4));}
+%
+% Arrow type Change
+\def\mpGarrowChg{%\sendMP{%
+vardef arrowhead expr p :=
+  save q,e; path q; pair e;
+  e = point length p of p;
+  q = p shifted -e cutbefore makepath(pencircle scaled 2ahlength);
+  (q rotated .5ahangle & reverse q rotated -.5ahangle -- point .7length q of q -- cycle)  shifted e
+enddef;
+}%}%
+\def\mpGarrowChgX(#1){%\sendMP{%
+ahlength:=#1mm;
+}%}%
+% Copy and draw picture
+\def\mpCopyPict#1{picture pct.#1;pct.#1=currentpicture;currentpicture:=nullpicture;}
+\def\mpDrawPict#1{draw pct.#1;}
+\def\mpDrawPictR#1(#2){draw pct.#1 scaled #2;}
+\def\mpDrawPictC#1[#2]{draw pct.#1 withcolor #2;}
+\def\mpDrawPictP#1(#2,#3){draw pct.#1 shifted ((#2,#3) scaled w);}
+\def\mpDrawPictPC#1(#2,#3)[#4]{draw pct.#1 shifted ((#2,#3) scaled w) withcolor #4;}
+\def\mpDrawPicts #1#2.{\mpDrawPict #1\ifx#2\empty\else\mpDrawPicts#2.\fi}
+\def\mpDrawRotPict#1(#2){draw pct.#1 rotated #2;}
+\def\mpDrawRotPicts#1(#2)[#3]{for ii=0 upto #3-1:draw pct.#1 rotated (#2*ii);endfor;}
+\def\mpDrawRotAroundPicts#1(#2)#3[#4]{for ii=0 upto #4-1:draw pct.#1 rotatedaround(gp#3,#2*ii);endfor;}
+\def\mpDrawRotMovePict#1(#2)#3{draw pct.#1 rotated #2 shifted gp#3;}
+% Redraw picture
+\def\mpReDrawPict(#1){%
+picture tmpict;tmpict=currentpicture;currentpicture:=nullpicture;
+draw tmpict scaled #1;
+}
+% DrawPlaneClipping (#1:width,#2:height)(#3,#4:left_bottom point)
+\def\mpPlaneClip(#1,#2)(#3,#4){%
+path PlaneBox;PlaneBox=((#3,#4)--(#3+(#1),#4)--(#3+(#1),#4+(#2))--(#3,#4+(#2))--cycle) scaled w;
+clip currentpicture to PlaneBox;%draw PlaneBox withcolor white;
+}%
+\def\mpPlaneClipRounded(#1,#2)(#3,#4)[#5]{%
+path PlaneBox;PlaneBox=(%
+(#3,#4)+(#5,0)--(#3+(#1),#4)-(#5,0){dir 0}..{dir 90}(#3+(#1),#4)+(0,#5)--%
+(#3+(#1),#4+(#2))-(0,#5){dir 90}..{dir 180}(#3+(#1),#4+(#2))-(#5,0)--%
+(#3,#4+(#2))+(#5,0){dir 180}..{dir -90}(#3,#4+(#2))-(0,#5)--%
+(#3,#4)+(0,#5){dir -90}..{dir 0}cycle) scaled w;%
+clip currentpicture to PlaneBox;%draw PlaneBox withcolor white;
+}%
+\def\mpClipPict(#1){picture pct.#1;pct.#1=currentpicture;}
+\def\mpClipPictCls(#1){picture pct.#1;pct.#1=currentpicture;currentpicture:=nullpicture;}
+\def\mpGdrawPict(#1)#2[#3]{draw (pct.#1 rotated #3) shifted gp#2;}
+% PathClipping
+\def\mpPathClip(#1)#2{%
+picture clp.#2;clip currentpicture to #1;%clp.#2=currentpicture;
+}%
+% path path
+\def\mpPathDefSet{%
+vardef front_half primary p = subpath(0, 1/2 length p) of p enddef;
+vardef back_half  primary p = subpath(1/2 length p, length p) of p enddef;
+vardef back_full  primary p = subpath(1/2 length p, length p) of p..subpath(0,1/2 length p) of p enddef;
+}
+\def\mpGpathline #1#2(#3){path pth.#3;pth.#3=gp#1--gp#2;}
+\def\mpGpathaddline #1(#2){pth.#2:=pth.#2--gp#1;}
+\def\mpGpathaddlines #1#2(#3){\mpGpathaddline #1(#3)\ifx#2\empty\else\mpGpathaddlines #2(#3)\fi}
+\def\mpGpathlines #1#2#3(#4){\mpGpathline #1#2(#4)\mpGpathaddlines #3(#4)}
+\def\mpGpath #1(#2,#3)#4 #5{path pth.#5;pth.#5=gp#1{dir #2}..{dir #3}gp#4;}
+\def\mpGpathAddpoint #1(#2,#3)#4{pth.#1:=pth.#1{dir #2}..{dir #3}gp#4;}
+\def\mpGpathAddpoints #1(#2,#3)#4#5.{\mpGpathAddpoint #1(#2,#3)#4\ifx#5\empty\else\mpGpathAddpoints#1#5.\fi}
+\def\mpGpathCloser #1(#2){path pth.#2;pth.#2=pth.#1--cycle;}
+\def\mpGpathFillC #1[#2]{fill pth.#1 withcolor #2;}
+\def\mpGpathDrawC #1[#2]{if not hwmode:draw pth.#1 withcolor #2;else:
+for tme=1 upto (arclength pth.#1):path tmp.p;tmp.p=subpath(tme-1,tme) of pth.#1;
+for hwrpt=1 upto hwtm:path tmp.hp;tmp.hp=hand_writing_path(tmp.p);draw tmp.hp withcolor #2;endfor;endfor;fi;}
+\def\mpGpathRotShiftDrawC #1(#2,#3)[#4]{path pth.Z;pth.Z=(pth.#1 rotated #2) shifted gp#3;\mpGpathDrawC Z[#4]}
+\def\mpGpathRotabtMove #1(#2,#3)#4#5(#6){path pth.#6;pth.#6=(pth.#1 rotatedabout(gp#2,#3)) shifted (gp#5-gp#4);}
+%
+%%% Points Definition,... %%% pair gpA,gpB,...
+\def\mpPointDef#1(#2,#3){pair gp#1;gp#1=(#2,#3) scaled w;}%
+\def\mpGmidPoint #1#2 #3{pair gp#3;gp#3=1/2[gp#1,gp#2];}%
+\def\mpGdivPoint #1#2 #3:#4 #5{pair gp#5;gp#5=(#3/(#3+(#4)))[gp#1,gp#2];}%
+\def\mpGrotPoint #1#2 #3 #4{pair gp#4;gp#4=gp#1+(gp#2-gp#1) rotated #3;}%
+\def\mpGhalfanglePoint #1#2#3 #4{pair gp#4;%
+gp#4=(length(gp#1-gp#2)/(length(gp#1-gp#2)+length(gp#1-gp#3)))[gp#2,gp#3];}%
+\def\mpGverticalPoint #1 #2#3 #4{pair gp#4;%
+gp#4=0.5[gp#1,gp#2 + (gp#1-gp#2) rotated (2 * (angle (gp#3-gp#2) - angle (gp#1-gp#2)) )];}%
+\def\mpGcrossPoint #1#2 #3#4 #5{pair gp#5;gp#5=whatever[gp#1,gp#2] = whatever[gp#3,gp#4];}%
+\def\mpGtrianglePoint #1#2[#3,#4]#5{
+numeric tmpagl;tmpagl=angle(gp#2-gp#1);
+path tmpPthA,tmpPthB;
+tmpPthA=((halfcircle scaled ((2*#3)*w)) rotated tmpagl) shifted gp#1;
+tmpPthB=((halfcircle scaled ((2*#4)*w)) rotated tmpagl) shifted gp#2;
+%draw tmpPthA withcolor 0.6white;draw tmpPthB withcolor 0.6white;
+pair gp#5;gp#5=%
+tmpPthA
+%(gp#1+#3/length(gp#2-gp#1)*w*(gp#2-gp#1)..gp#1+#3/length(gp#2-gp#1)*w*(gp#2-gp#1) rotated 90%
+%..gp#1-#3/length(gp#2-gp#1)*w*(gp#2-gp#1)) %
+intersectionpoint %
+%(gp#2+#4/length(gp#2-gp#1)*w*(gp#2-gp#1)..gp#2+#4/length(gp#2-gp#1)*w*(gp#2-gp#1) rotated 90%
+%..gp#2-#4/length(gp#2-gp#1)*w*(gp#2-gp#1))
+tmpPthB
+;}%
+\def\mpGtrianglePointD #1#2(#3,#4)#5{pair gp#5;gp#5=%
+(gp#1+length(gp#3-gp#1)/length(gp#2-gp#1)*(gp#2-gp#1)..gp#1+length(gp#3-gp#1)/length(gp#2-gp#1)*(gp#2-gp#1) rotated 90..gp#1-length(gp#3-gp#1)/length(gp#2-gp#1)*(gp#2-gp#1)) %
+intersectionpoint %
+(gp#2+length(gp#4-gp#2)/length(gp#2-gp#1)*(gp#2-gp#1)..gp#2+length(gp#4-gp#2)/length(gp#2-gp#1)*(gp#2-gp#1) rotated 90..gp#2-length(gp#4-gp#2)/length(gp#2-gp#1)*(gp#2-gp#1));}%
+\def\mpGmovePoint #1 #2#3 #4{pair gp#4;gp#4=gp#1+(gp#3-gp#2);}%
+\def\mpGPmovePoint #1(#2,#3)#4{pair gp#4;gp#4=gp#1+((#2,#3) scaled w);}%
+\def\mpGmovedistPoint #1 #2#3(#4)#5{pair gp#5;gp#5=gp#1+#4*w*unitvector(gp#3-gp#2);}%
+\def\mpGmoveDistPoint #1 #2#3(#4#5)#6{pair gp#6;gp#6=gp#1+length(gp#5-gp#4)*unitvector(gp#3-gp#2);}%
+\def\mpGdistanglePoint #1(#2,#3)#4{pair gp#4;gp#4=gp#1+((#2w,0) rotated (#3));}%
+\def\mpGDistanglePoint #1(#2#3,#4)#5{pair gp#5;gp#5=gp#1+((length(gp#3-gp#2),0) rotated (#4));}%
+\def\mpGvectanglePoint #1 #2#3(#4) #5{pair gp#5;gp#5=gp#1+((length(gp#3-gp#2),0) rotated (#4));}%
+\def\mpGmovehalfPoint #1 #2#3 #4{pair gp#4;gp#4=gp#1+(gp#3-gp#2)/2;}%
+\def\mpGreflectedPoint #1 #2#3 #4{pair gp#4;gp#4=gp#1 reflectedabout (gp#2,gp#3);}%
+%
+\def\mpPointsDef#1(#2,#3)#4.{\mpPointDef#1(#2,#3)\ifx#4\empty\else\mpPointsDef#4.\fi}%
+\def\mpGmidPoints #1#2#3|#4#5.{\mpGmidPoint #1#2 #4\ifx#5\empty\else\mpGmidPoints #2#3|#5.\fi}%
+\def\mpGrotPoints #1#2 #3 #4#5.{\mpGrotPoint #1#2 #3 #4\ifx#5\empty\else\mpGrotPoints #1#4 #3 #5.\fi}%
+%
+\def\mpGCircumCenter #1#2#3 #4{pair gp#4;%
+pair tmpCC;(gp#1+gp#2)/2-tmpCC = whatever*((gp#1-gp#2) rotated 90);
+(gp#2+gp#3)/2-tmpCC = whatever*((gp#2-gp#3) rotated 90);gp#4=tmpCC;
+}
+\def\mpGIncenter #1#2#3 #4{\mpGInCenter #1#2#3 #4}
+\def\mpGInCenter #1#2#3 #4{pair gp#4;numeric a,b,c,d;
+a=length(gp#3-gp#2)/w;b=length(gp#1-gp#3)/w;c=length(gp#2-gp#1)/w;d=a+b+c;
+gp#4=a/d*gp#1+b/d*gp#2+c/d*gp#3;
+}
+\def\mpGGravityCenter #1#2#3 #4{pair gp#4;gp#4=(gp#1+gp#2+gp#3)/3;}
+%
+\def\mpGpoleCirclPolarPoint #1 #2#3 #4#5{% #1:Pole #2#3:CircleCenterOncircle #4#5 PolarPoints
+numeric n.r;n.r=length(gp#2-gp#3)/w;\mpGpoleCircPolarPoint #1 #2(n.r) #4#5}%
+\def\mpGpoleCircPolarPoint #1 #2(#3) #4#5{% #1:Pole #2(#3):Circle(radius) #4#5 PolarPoints
+numeric n.a,n.b;n.a=length(gp#1-gp#2)/w;
+if n.a>#3:n.b=sqrt(n.a*n.a-#3*#3);\mpGtrianglePoint #1#2[n.b,#3]#4\mpGtrianglePoint #2#1[#3,n.b]#5
+elseif n.a<#3:n.b=sqrt(#3*#3-n.a*n.a);
+\mpGtrianglePoint #1#2[n.b,#3]{x#4}\mpGtrianglePoint #2#1[#3,n.b]{x#5}
+\mpGrotPoint {x#4}#2 90 {y#4}\mpGrotPoint {x#5}#2 90 {y#5}
+\mpGcrossPoint {x#4}{y#4} {x#5}{y#5} {p#4#5}
+\mpGmovehalfPoint {p#4#5} {x#4}{x#5} #4\mpGmovehalfPoint {p#4#5} {x#5}{x#4} #5
+else:\mpGrotPoint #1#2 90 #4\mpGrotPoint #1#2 -90 #5
+fi;}%
+\def\mpGpoleCircTanPoint #1 #2(#3) #4#5{\mpGpoleCircPolarPoint #1 #2(#3) #4#5}
+% ???
+\def\mpGcircrossPoint #1#2(#3)#4{pair gp#4;% #1:center #2:circlepoint #3:innerPoint #4:answer
+gp#4=(fullcircle scaled (2*length(gp#1-gp#2)) shifted gp#1) intersectionpoint (gp#3--gp#3+10*(gp#1-gp#3) rotated 90);}%
+\def\mpGcircrossPointR #1#2(#3)#4{pair gp#4;% #1:center #2:circlepoint #3:innerPoint #4:answer
+gp#4=(fullcircle scaled (2*length(gp#1-gp#2)) shifted gp#1) intersectionpoint (gp#3--gp#3+10*(gp#1-gp#3) rotated -90);}%
+\def\mpGcircRPoint #1#2(#3)#4{pair gp#4;% #1:center #2:circlepoint #3:innerPoint #4:answer
+gp#4=(fullcircle scaled (2*length(gp#1-gp#2)) shifted gp#1) intersectionpoint (gp#1--gp#1+2*length(gp#2-gp#1)*unitvector(gp#3-gp#1));}%
+% 20180211add
+\def\mpGCircPoint #1(#2)#3 #4#5{% #1(#2):Circle(radius) #3:In Circle Point #4#5 Points on Circle
+numeric n.a,n.b;n.a=length(gp#3-gp#1)/w;
+n.b=sqrt(#2*#2-n.a*n.a);
+\mpGtrianglePoint #1#3[#2,n.b]#4\mpGtrianglePoint #3#1[n.b,#2]#5
+}%
+\def\mpGcircPoint #1(#2)#3 #4#5{% #1(#2):Circle(radius) #3:In Circle Point #4#5 Points on Circle
+numeric n.a,n.b,n.c;n.a=length(gp#3-gp#1)/w;n.c=length(gp#2-gp#1)/w;
+n.b=sqrt(n.c*n.c-n.a*n.a);
+}%
+\def\mpGcirclPoint #1#2 #3 #4#5{% #1#2:Circle(center on-point) #3:In Circle Point #4#5 Points on Circle
+numeric n.a,n.b,n.c;n.a=length(gp#3-gp#1)/w;n.c=length(gp#2-gp#1)/w;
+n.b=sqrt(n.c*n.c-n.a*n.a);
+\mpGtrianglePoint #1#3[n.c,n.b]#4\mpGtrianglePoint #3#1[n.b,n.c]#5
+}%
+\def\mpGdisttrianglePoint #1#2(#3#4,#5#6)#7{%
+numeric n.a,n.b;n.a=length(gp#4-gp#3)/w;n.b=length(gp#6-gp#5)/w;
+\mpGtrianglePoint #1#2[n.a,n.b]#7
+}%
+\def\mpGmoveDistPoint #1 #2#3(#4#5)#6{pair gp#6;gp#6=gp#1+length(gp#5-gp#4)*unitvector(gp#3-gp#2);}%
+%
+% Draw
+% Draw points 0.3mm-2mm-4mm
+\def\mpPpoint(#1,#2){if not hwmode:filldraw fullcircle scaled 0.5mm shifted ((#1,#2) scaled w);
+ else:draw ( ((#1,#2) scaled w) for j=1 upto 60:..((#1,#2) scaled w)+((j+uniformdeviate(20)-20,0) scaled 0.3mm rotated (30*j))/20 endfor);fi;}
+\def\mpPpointC(#1,#2)[#3]{if not hwmode:filldraw fullcircle scaled 0.5mm shifted ((#1,#2) scaled w) withcolor (#3);
+ else:draw ( ((#1,#2) scaled w) for j=1 upto 60:..((#1,#2) scaled w)+((j+uniformdeviate(20)-20,0) scaled 0.3mm rotated (30*j))/20 endfor) withcolor (#3);fi;}
+\def\mpPpointb(#1,#2){if not hwmode:filldraw fullcircle scaled 1.2mm shifted ((#1,#2) scaled w);
+ else:filldraw hand_writing_path(fullcircle scaled 1.2mm shifted ((#1,#2) scaled w));}
+\def\mpGpoint#1{if not hwmode:filldraw fullcircle scaled 0.6mm shifted gp#1;
+ else:draw ( gp#1 for j=1 upto 60:..gp#1+((j+uniformdeviate(20)-20,0) scaled 0.3mm rotated (30*j))/20 endfor);fi;}
+\def\mpGpointC#1[#2]{if not hwmode:filldraw fullcircle scaled 0.6mm shifted gp#1 withcolor #2;
+ else:draw ( gp#1 for j=1 upto 60:..gp#1+((j+uniformdeviate(20)-20,0) scaled 0.3mm rotated (30*j))/20 endfor) withcolor #2;fi;}
+\def\mpGpointb#1{if not hwmode:filldraw fullcircle scaled 1.2mm shifted gp#1;
+ else:filldraw hand_writing_path(fullcircle scaled 1.2mm shifted gp#1);fi;}
+\def\mpGpointo#1{fill fullcircle scaled 1.2mm shifted gp#1 withcolor white;
+ if not hwmode:draw fullcircle scaled 1.2mm shifted gp#1;
+ else:for hwrpt=1 upto hwtm:draw hand_writing_path(fullcircle scaled 1.2mm shifted gp#1);endfor;fi;}
+\def\mpGpointO#1{fill fullcircle scaled 4mm shifted gp#1 withcolor white;
+ if not hwmode:draw fullcircle scaled 4mm shifted gp#1;
+ else:for hwrpt=1 upto hwtm:draw hand_writing_path(fullcircle scaled 4mm shifted gp#1);endfor;fi;}
+\def\mpGpointTO#1{%fill fullcircle scaled 4mm shifted gp#1 withcolor white;
+ if not hwmode:draw fullcircle scaled 4mm shifted gp#1;
+ else:for hwrpt=1 upto hwtm:draw hand_writing_path(fullcircle scaled 4mm shifted gp#1);endfor;fi;}
+\def\mpGpointTOC#1[#2]{fill fullcircle scaled 4mm shifted gp#1 withcolor white;
+ if not hwmode:draw fullcircle scaled 4mm shifted gp#1 withcolor #2;
+ else:for hwrpt=1 upto hwtm:path hwp;hwp=hand_writing_path(fullcircle scaled 4mm shifted gp#1);draw hwp withcolor #2;endfor;fi;}
+\def\mpGpointOC#1[#2]{fill fullcircle scaled 4mm shifted gp#1 withcolor #2;
+ if not hwmode:draw fullcircle scaled 4mm shifted gp#1;
+ else:for hwrpt=1 upto hwtm:draw hand_writing_path(fullcircle scaled 4mm shifted gp#1);endfor;fi;}
+\def\mpGpointODC#1[#2]{%fill fullcircle scaled 4mm shifted gp#1 withcolor white;
+ if not hwmode:draw fullcircle scaled 4mm shifted gp#1 withcolor #2;
+ else:for hwrpt=1 upto hwtm:path hwp;
+ hwp=hand_writing_path(fullcircle scaled 4mm shifted gp#1);draw hwp withcolor #2;endfor;fi;}
+ \def\mpGpointbC#1[#2]{if not hwmode:filldraw fullcircle scaled 2mm shifted gp#1;
+ else:path tmp.hp;tmp.hp=hand_writing_path(fullcircle scaled 2mm shifted gp#1);
+filldraw tmp.hp withcolor #2;fi;}
+ \def\mpGpointB#1{if not hwmode:filldraw fullcircle scaled 4mm shifted gp#1;
+ else:filldraw hand_writing_path(fullcircle scaled 4mm shifted gp#1);fi;}
+ \def\mpGpointx#1{if not hwmode:
+ draw ((0.5,0.5)--(-0.5,-0.5)) scaled 2mm shifted gp#1;
+ draw ((-0.5,0.5)--(0.5,-0.5)) scaled 2mm shifted gp#1;
+ else:
+ hwp.dum:=((0.5,0.5)--(-0.5,-0.5)) scaled 2mm shifted gp#1;for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;
+ hwp.dum:=((-0.5,0.5)--(0.5,-0.5)) scaled 2mm shifted gp#1;for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;
+ fi;}
+ \def\mpGpointmarkx#1{if not hwmode:
+ draw ((0.5,0.5)--(-0.5,-0.5)) scaled 1mm shifted gp#1;
+ draw ((-0.5,0.5)--(0.5,-0.5)) scaled 1mm shifted gp#1;
+ else:
+ hwp.dum:=((0.5,0.5)--(-0.5,-0.5)) scaled 1mm shifted gp#1;for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;
+ hwp.dum:=((-0.5,0.5)--(0.5,-0.5)) scaled 1mm shifted gp#1;for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;
+ fi;}
+ \def\mpPpoints (#1)#2.{\mpPpoint(#1)\ifx#2\empty\else\mpPpoints#2.\fi}
+ \def\mpPpointS (#1)#2|{\mpPpoint(#1)\ifx#2\empty\else\mpPpointS#2|\fi}
+ \def\mpGpoints #1#2.{\mpGpoint #1\ifx#2\empty\else\mpGpoints#2.\fi}
+ \def\mpGpointCs #1#2[#3]{\mpGpointC #1[#3]\ifx#2\empty\else\mpGpointCs#2[#3]\fi}
+ \def\mpGpointbs #1#2.{\mpGpointb #1\ifx#2\empty\else\mpGpointbs#2.\fi}
+ \def\mpGpointbCs #1#2[#3]{\mpGpointbC #1[#3]\ifx#2\empty\else\mpGpointbCs#2[#3]\fi}
+ \def\mpGpointos #1#2.{\mpGpointo #1\ifx#2\empty\else\mpGpointos#2.\fi}
+ \def\mpGpointOs #1#2.{\mpGpointO #1\ifx#2\empty\else\mpGpointOs#2.\fi}
+ \def\mpGpointTOs #1#2.{\mpGpointTO #1\ifx#2\empty\else\mpGpointTOs#2.\fi}
+ \def\mpGpointOCs #1#2[#3]{\mpGpointOC #1[#3]\ifx#2\empty\else\mpGpointOCs#2[#3]\fi}
+ \def\mpGpointTOCs #1#2[#3]{\mpGpointTOC #1[#3]\ifx#2\empty\else\mpGpointTOCs#2[#3]\fi}
+ \def\mpGpointODCs #1#2[#3]{\mpGpointODC #1[#3]\ifx#2\empty\else\mpGpointODCs#2[#3]\fi}
+ \def\mpGpointBs #1#2.{\mpGpointB #1\ifx#2\empty\else\mpGpointBs#2.\fi}
+ \def\mpGpointxs #1#2.{\mpGpointx #1\ifx#2\empty\else\mpGpointxs#2.\fi}
+ \def\mpGpointmarkxs #1#2.{\mpGpointmarkx #1\ifx#2\empty\else\mpGpointmarkxs#2.\fi}
+% Draw lines
+\def\mpPline(#1,#2)(#3,#4){if not hwmode:draw ((#1,#2)--(#3,#4)) scaled w;
+ else:for hwrpt=1 upto hwtm:draw hand_writing_path(((#1,#2)--(#3,#4)) scaled w);endfor;fi;}
+\def\mpPlineC(#1,#2)(#3,#4)[#5]{if not hwmode:draw ((#1,#2)--(#3,#4)) scaled w withcolor #5;
+ else:for hwrpt=1 upto hwtm:path tmphwp;tmphwp=hand_writing_path(((#1,#2)--(#3,#4)) scaled w);draw tmphwp withcolor #5;endfor;fi;}
+\def\mpPlined(#1,#2)(#3,#4){path tmpp;tmpp=((#1,#2)--(#3,#4)) scaled w;
+if not hwmode:draw tmpp dashed withdots scaled 0.5pt;
+else:path tmppp;tmppp=tmpp;
+for hwrpt=1 upto hwtm:tmppp:=hand_writing_path(tmpp);draw tmppp dashed withdots scaled 0.5pt;endfor;fi;}
+\def\mpPlinedC(#1,#2)(#3,#4)[#5]{path tmpp;tmpp=((#1,#2)--(#3,#4)) scaled w;
+if not hwmode:draw tmpp dashed withdots scaled 0.5pt withcolor #5;
+else:path tmppp;tmppp=tmpp;
+for hwrpt=1 upto hwtm:tmppp:=hand_writing_path(tmpp);draw tmppp dashed withdots scaled 0.5pt withcolor #5;endfor;fi;}
+ \def\mpGline#1#2{if not hwmode:draw gp#1--gp#2;
+ else:for hwrpt=1 upto hwtm:draw hand_writing_path(gp#1--gp#2);endfor;fi;}
+ \def\mpGlineC#1#2[#3]{path tmp.p;tmp.p=gp#1--gp#2;%
+if not hwmode:draw tmp.p withcolor #3;
+ else:for hwrpt=1 upto hwtm:path tmp.hp;tmp.hp=hand_writing_path(gp#1--gp#2);
+draw tmp.hp withcolor #3;endfor;fi;}
+\def\mpGloopC#1[#2,#3](#4)[#5]{path tmp.p;tmp.p=gp#1{dir (#2*30)}..gp#1+(#4w,0) rotated ((#2+#3)*30/2)..{dir (180+#3*30)}gp#1;%
+if not hwmode:draw tmp.p withcolor #5;
+ else:for hwrpt=1 upto hwtm:path tmp.hp;tmp.hp=hand_writing_path(tmp.p);
+draw tmp.hp withcolor #5;endfor;fi;}
+\def\mpGlinew#1#2[#3]{if not hwmode:draw #3[gp#1,gp#2]--#3[gp#2,gp#1];
+else:for hwrpt=1 upto hwtm:draw hand_writing_path(#3[gp#1,gp#2]--#3[gp#2,gp#1]);endfor;fi;}
+\def\mpGlineCw#1#2[#3,#4]{path tmpline;tmpline=(#3)[gp#1,gp#2]--(#3)[gp#2,gp#1];if not hwmode:draw tmpline withcolor #4;
+else:for hwrpt=1 upto hwtm:path tmp.hp;tmp.hp=hand_writing_path(tmpline);draw tmp.hp withcolor #4;endfor;fi;}
+ \def\mpGlined#1#2{path tmppth;tmppth=gp#1--gp#2;if not hwmode:draw tmppth dashed withdots scaled 0.5pt;else:
+ for hwrpt=1 upto 2hwtm:path tmphwp;tmphwp=hand_writing_path(tmppth);draw tmphwp dashed withdots scaled 0.5pt;endfor;fi;}
+ \def\mpGlinedC#1#2[#3]{path p.#1#2dl;p.#1#2dl=gp#1--gp#2;if not hwmode:draw p.#1#2dl dashed withdots scaled 0.5pt withcolor #3;else:for hwrpt=1 upto 2hwtm:p.#1#2dl:=hand_writing_path(gp#1--gp#2);draw p.#1#2dl dashed withdots scaled 0.5pt withcolor #3;endfor;fi;}
+ \def\mpGlinedCX#1#2[#3][#4]{path p.#1#2dl;p.#1#2dl=gp#1--gp#2;if not hwmode:draw p.#1#2dl dashed withdots scaled (#4*0.5pt) withcolor #3;else:for hwrpt=1 upto 2hwtm:p.#1#2dl:=hand_writing_path(gp#1--gp#2);draw p.#1#2dl dashed withdots scaled (#4*0.5pt) withcolor #3;endfor;fi;}
+ \def\mpGlinedeC#1#2[#3]{path p.#1#2dl;p.#1#2dl=gp#1--gp#2;if not hwmode:draw p.#1#2dl dashed evenly shifted (5,3) withcolor #3;else:for hwrpt=1 upto 2hwtm:p.#1#2dl:=hand_writing_path(gp#1--gp#2);draw p.#1#2dl dashed evenly shifted (5,3) withcolor #3;endfor;fi;}
+ \def\mpGlinedw#1#2[#3]{path p.#1#2dl;p.#1#2dl=#3[gp#1,gp#2]--#3[gp#2,gp#1];if not hwmode:draw p.#1#2dl dashed withdots scaled 0.5pt;else:for hwrpt=1 upto 2hwtm:p.#1#2dl:=hand_writing_path(#3[gp#1,gp#2]--#3[gp#2,gp#1]);draw p.#1#2dl dashed withdots scaled 0.5pt;endfor;fi;}
+%\def\mpGarrow #1#2{drawarrow gp#1--gp#2;}
+\def\mpParrow (#1,#2)(#3,#4){pair tmpA,tmpB;tmpA=(#1,#2) scaled w;tmpB=(#3,#4) scaled w;
+if not hwmode:draw tmpA--tmpB;draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) rotated angle(tmpB-tmpA) shifted tmpB;else:for hwrpt=1 upto hwtm:draw hand_writing_path(tmpA--tmpB);draw hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) rotated angle(tmpB-tmpA) shifted tmpB);endfor;fi;}
+\def\mpParrowC (#1,#2)(#3,#4)[#5]{pair tmpA,tmpB;tmpA=(#1,#2) scaled w;tmpB=(#3,#4) scaled w;%
+if not hwmode:draw tmpA--tmpB withcolor #5;%
+draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) rotated angle(tmpB-tmpA) shifted tmpB withcolor #5;%
+else:for hwrpt=1 upto hwtm:path tmpPthL,tmpPthA;tmpPthL=hand_writing_path(tmpA--tmpB);tmpPthA= hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) rotated angle(tmpB-tmpA) shifted tmpB);
+draw tmpPthL withcolor #5;draw tmpPthA withcolor #5;endfor;fi;}
+\def\mpParrowX (#1,#2)(#3,#4)[#5]{pair tmpA,tmpB;tmpA=(#1,#2) scaled w;tmpB=(#3,#4) scaled w;
+if not hwmode:draw tmpA--tmpB;draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) scaled #5 rotated angle(tmpB-tmpA) shifted tmpB;else:for hwrpt=1 upto hwtm:draw hand_writing_path(tmpA--tmpB);draw hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) scaled #5 rotated angle(tmpB-tmpA) shifted tmpB);endfor;fi;}
+\def\mpParrowCX (#1,#2)(#3,#4)[#5][#6]{pair tmpA,tmpB;tmpA=(#1,#2) scaled w;tmpB=(#3,#4) scaled w;%
+if not hwmode:draw tmpA--tmpB withcolor #5;%
+draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) scaled #6 rotated angle(tmpB-tmpA) shifted tmpB withcolor #5;%
+else:for hwrpt=1 upto hwtm:path tmpPthL,tmpPthA;tmpPthL=hand_writing_path(tmpA--tmpB);tmpPthA= hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) scaled #6 rotated angle(tmpB-tmpA) shifted tmpB);
+draw tmpPthL withcolor #5;draw tmpPthA withcolor #5;endfor;fi;}
+\def\mpGarrow #1#2{if not hwmode:draw gp#1--gp#2;draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) rotated angle(gp#2-gp#1) shifted gp#2;else:for hwrpt=1 upto hwtm:draw hand_writing_path(gp#1--gp#2);draw hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) rotated angle(gp#2-gp#1) shifted gp#2);endfor;fi;}
+\def\mpGarrowC #1#2[#3]{if not hwmode:draw gp#1--gp#2 withcolor #3;draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) rotated angle(gp#2-gp#1) shifted gp#2 withcolor #3;else:for hwrpt=1 upto hwtm:path tmpPthL,tmpPthA;tmpPthL=hand_writing_path(gp#1--gp#2);tmpPthA= hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) rotated angle(gp#2-gp#1) shifted gp#2);
+draw tmpPthL withcolor #3;draw tmpPthA withcolor #3;endfor;fi;}
+\def\mpGarrowX #1#2[#3]{if not hwmode:draw gp#1--gp#2;draw (((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) scaled #3) rotated angle(gp#2-gp#1) shifted gp#2;else:for hwrpt=1 upto hwtm:draw hand_writing_path(gp#1--gp#2);draw hand_writing_path((((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) scaled #3) rotated angle(gp#2-gp#1) shifted gp#2);endfor;fi;}
+\def\mpGarrowCX #1#2[#3][#4]{if not hwmode:draw gp#1--gp#2 withcolor #3;draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm))  scaled #4 rotated angle(gp#2-gp#1) shifted gp#2 withcolor #3;else:for hwrpt=1 upto hwtm:path tmpPthL,tmpPthA;tmpPthL=hand_writing_path(gp#1--gp#2);tmpPthA= hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm))  scaled #4 rotated angle(gp#2-gp#1) shifted gp#2);
+draw tmpPthL withcolor #3;draw tmpPthA withcolor #3;endfor;fi;}
+\def\mpGarrowCXW #1#2[#3][#4]{if not hwmode:draw gp#1--gp#2 withcolor #3;draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm))  scaled #4 rotated angle(gp#2-gp#1) shifted gp#2 withcolor #3;draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm))  scaled #4 rotated angle(gp#1-gp#2) shifted gp#1 withcolor #3;
+else:for hwrpt=1 upto hwtm:path tmpPthL,tmpPthA,tmpPthB;tmpPthL=hand_writing_path(gp#1--gp#2);tmpPthA= hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) scaled #4 rotated angle(gp#2-gp#1) shifted gp#2);tmpPthB= hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) scaled #4 rotated angle(gp#1-gp#2) shifted gp#1);
+draw tmpPthL withcolor #3;draw tmpPthA withcolor #3;draw tmpPthB withcolor #3;endfor;fi;}
+\def\mpGarrowCXWD #1#2[#3][#4](#5){if not hwmode:
+draw gp#1--#5[gp#1,(gp#1+gp#2)/2] withcolor #3;draw gp#2--#5[gp#2,(gp#1+gp#2)/2] withcolor #3;
+draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm))  scaled #4 rotated angle(gp#2-gp#1) shifted gp#2 withcolor #3;
+draw ((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm))  scaled #4 rotated angle(gp#1-gp#2) shifted gp#1 withcolor #3;
+else:for hwrpt=1 upto hwtm:path tmpPthL,tmpPthR,tmpPthA,tmpPthB;
+tmpPthL=hand_writing_path(gp#1--#5[gp#1,(gp#1+gp#2)/2]);
+tmpPthR=hand_writing_path(gp#2--#5[gp#2,(gp#1+gp#2)/2]);
+tmpPthA= hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) scaled #4 rotated angle(gp#2-gp#1) shifted gp#2);
+tmpPthB= hand_writing_path(((-1.6mm,0.8mm)--(0,0)--(-1.6mm,-0.8mm)) scaled #4 rotated angle(gp#1-gp#2) shifted gp#1);
+draw tmpPthL withcolor #3;draw tmpPthR withcolor #3;
+draw tmpPthA withcolor #3;draw tmpPthB withcolor #3;endfor;fi;}
+%
+\def\mpGlenWArrowLabelCXD #1#2(#3)[#4,#5,#6](#7){% #1#2: line  #3: len  #4: color  #5: arrowsize 
+%________________________________________________% #6: space  #7: labelsize & dist
+pair gpx,gpy,gpz;
+gpx=gp#1+(#5*3mm)*unitvector((gp#2-gp#1) rotated -90);
+gpy=gp#2+(#5*3mm)*unitvector((gp#2-gp#1) rotated -90);
+gpz=(gpx+gpy)/2;
+\mpGarrowCXWD xy[#4][#5](#6)
+\mpGputtxtSXC z(#3)[#7][#4]
+}%
+%
+\def\mpPlines(#1)(#2)#3.{\mpPline(#1)(#2)\ifx#3\empty\else\mpPlines(#2)#3.\fi}
+\def\mpGlines#1#2#3.{\mpGline#1#2\ifx#3\empty\else\mpGlines#2#3.\fi}
+\def\mpGliness#1#2#3.{\mpGline#1#2\ifx#3\empty\else\mpGliness#3.\fi}
+\def\mpGlineds#1#2#3.{\mpGlined#1#2\ifx#3\empty\else\mpGlineds#2#3.\fi}
+\def\mpGlinedss#1#2#3.{\mpGlined#1#2\ifx#3\empty\else\mpGlinedss#3.\fi}
+\def\mpGlineCs#1#2#3[#4]{\mpGlineC#1#2[#4]\ifx#3\empty\else\mpGlineCs#2#3[#4]\fi}
+\def\mpGlinedCs#1#2#3[#4]{\mpGlinedC#1#2[#4]\ifx#3\empty\else\mpGlinedCs#2#3[#4]\fi}
+\def\mpGlinedCXs#1#2#3[#4][#5]{\mpGlinedCX#1#2[#4][#5]\ifx#3\empty\else\mpGlinedCXs#2#3[#4][#5]\fi}
+\def\mpGlinedeCs#1#2#3[#4]{\mpGlinedeC#1#2[#4]\ifx#3\empty\else\mpGlinedeCs#2#3[#4]\fi}
+ \def\mpGarrows#1#2#3.{\mpGarrow#1#2\ifx#3\empty\else\mpGarrows#2#3.\fi}
+ \def\mpGarrowws#1#2#3.{\mpGarrow#1#2\ifx#3\empty\else\mpGarrows#3.\fi}
+ \def\mpGarrowXs#1#2#3[#4]{\mpGarrowX#1#2[#4]\ifx#3\empty\else\mpGarrowXs#2#3[#4]\fi}
+ \def\mpGarrowwXs#1#2#3[#4]{\mpGarrowX#1#2[#4]\ifx#3\empty\else\mpGarrowwXs#3[#4]\fi}
+%
+% Circle
+\def\mpPcirc (#1,#2)(#3){pair tmpCircP;tmpCircP=((#1,#2) scaled w);%
+if not hwmode:draw fullcircle scaled (2*#3*w) shifted tmpCircP;
+else:for hwrpt=1 upto hwtm:draw hand_writing_path(fullcircle scaled (2*#3*w) shifted tmpCircP);endfor;fi;}%
+\def\mpPcircC (#1,#2)(#3)[#4]{pair tmpCircP;tmpCircP=((#1,#2) scaled w);%
+if not hwmode:draw fullcircle scaled (2*#3*w) shifted tmpCircP withcolor #4;
+else:for hwrpt=1 upto hwtm:path tmpPth;tmpPth=hand_writing_path(fullcircle scaled (2*#3*w) shifted tmpCircP);draw tmpPth withcolor #4;endfor;fi;}%
+\def\mpGcirc #1(#2){if not hwmode:draw fullcircle scaled (2*#2*w) shifted gp#1;
+ else:for hwrpt=1 upto hwtm:draw hand_writing_path(fullcircle scaled (2*#2*w) shifted gp#1);endfor;fi;}%
+\def\mpGcircC #1(#2)[#3]{if not hwmode:draw fullcircle scaled (2*#2*w) shifted gp#1 withcolor #3;
+ else:for hwrpt=1 upto hwtm:path tmp.hp;tmp.hp=hand_writing_path(fullcircle scaled (2*#2*w) shifted gp#1);draw tmp.hp withcolor #3;endfor;fi;}%
+\def\mpGcircs #1(#2)#3.{\mpGcirc#1(#2)\ifx#3\empty\else\mpGcircs#3.\fi}%
+\def\mpGcircCs #1(#2)#3[#4]{\mpGcircC#1(#2)[#4]\ifx#3\empty\else\mpGcircCs#3[#4]\fi}%
+\def\mpGcircl #1#2{if not hwmode:draw fullcircle scaled (2*length(gp#1-gp#2)) shifted gp#1; else:for hwrpt=1 upto hwtm:draw hand_writing_path(fullcircle scaled (2*length(gp#1-gp#2)) shifted gp#1);endfor;fi;}%
+\def\mpGcirclC #1#2[#3]{if not hwmode:draw fullcircle scaled (2*length(gp#1-gp#2)) shifted gp#1 withcolor #3;else:for hwrpt=1 upto hwtm:path tmp.hp;tmp.hp=hand_writing_path(fullcircle scaled (2*length(gp#1-gp#2)) shifted gp#1);draw tmp.hp withcolor #3;endfor;fi;}%
+\def\mpGcircd #1(#2){path p.#1#2dc;p.#1#2dc=fullcircle scaled (2*#2*w) shifted gp#1;if not hwmode:draw p.#1#2dc dashed withdots scaled 0.5pt;else:for hwrpt=1 upto hwtm:p.#1#2dc:=hand_writing_path(fullcircle scaled (2*#2*w) shifted gp#1);draw p.#1#2dc dashed withdots scaled 0.5pt;endfor;fi;}%
+\def\mpGcircld #1#2{path p.#1#2dc;p.#1#2dc=fullcircle scaled (2*length(gp#1-gp#2)) shifted gp#1;if not hwmode:draw p.#1#2dc dashed withdots scaled 0.5pt; else:for hwrpt=1 upto hwtm:p.#1#2dc:=hand_writing_path(fullcircle scaled (2*length(gp#1-gp#2)) shifted gp#1);draw p.#1#2dc dashed withdots scaled 0.5pt;endfor;fi;}%
+%%
+ \def\mpGcircls #1#2#3.{\mpGcircl#1#2\ifx#3\empty\else\mpGcircls#3.\fi}%
+ \def\mpGaglArc #1(#2,#3)#4{if not hwmode:draw gp#1{dir #2}..{dir #3}gp#4;
+ else:for hwrpt=1 upto hwtm:draw hand_writing_path(gp#1{dir #2}..{dir #3}gp#4);endfor;fi;}
+ \def\mpGaglArcd #1(#2,#3)#4{if not hwmode:draw gp#1{dir #2}..{dir #3}gp#4 dashed withdots scaled 0.5pt;
+ else:for hwrpt=1 upto hwtm:draw hand_writing_path(gp#1{dir #2}..{dir #3}gp#4) dashed withdots scaled 0.5pt;endfor;fi;}
+%
+% Path
+% buildcycle path, reverse path, fill path
+%
+\def\mpPathReverse #1{pth.#1:=reverse pth.#1;}
+\def\mpPathBuildCycle(#1,#2)#3{path pth.#3;pth.#3=buildcycle(pth.#1,pth.#2);}
+\def\mpPathBuildCyclee(#1,#2,#3)#4{path pth.#4;pth.#4=buildcycle(pth.#1,pth.#2,pth.#3);}
+\def\mpPathFillC #1[#2]{fill pth.#1 withcolor #2;}
+%
+% make path of Circle Arc % -----------------------------------------------------------------------------------
+%
+\def\mpGcircarcPath #1(#2)(#3,#4)#5{path pth.#5;pth.#5=((#2w,0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(#2w,0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(#2w,0) rotated #4) shifted gp#1;}%
+\def\mpGcircarclinePath #1(#2)(#3,#4)#5{path pth.#5;pth.#5=((#2w,0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(#2w,0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(#2w,0) rotated #4--(#2w,0) rotated #3) shifted gp#1;}%
+\def\mpGcirclarcPath #1#2(#3,#4)#5{path pth.#5;pth.#5=((length(gp#1-gp#2),0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(length(gp#1-gp#2),0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(length(gp#1-gp#2),0) rotated #4) shifted gp#1;}
+\def\mpGcirclarclinePath #1#2(#3,#4)#5{path pth.#5;pth.#5=((length(gp#1-gp#2),0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(length(gp#1-gp#2),0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(length(gp#1-gp#2),0) rotated #4--(length(gp#1-gp#2),0) rotated #3) shifted gp#1;}
+\def\mpGcirclarclineCenterPath #1#2(#3,#4)#5{path pth.#5;pth.#5=((length(gp#1-gp#2),0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(length(gp#1-gp#2),0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(length(gp#1-gp#2),0) rotated #4--(0,0)--(length(gp#1-gp#2),0) rotated #3) shifted gp#1;}
+%
+% draw Circle Arc
+\def\mpGcircarc #1(#2)(#3,#4){%
+draw ((#2w,0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(#2w,0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(#2w,0) rotated #4) shifted gp#1;}%
+\def\mpPcircarc (#1,#2)(#3)(#4,#5){%
+draw ((#3w,0) rotated #4{dir (#4+90)}..
+{dir ((#4+#5)/2+90)}(#3w,0) rotated ((#4+#5)/2){dir ((#4+#5)/2+90)}..
+{dir (#5+90)}(#3w,0) rotated #5) shifted (#1w,#2w);}%
+\def\mpPcircarcF (#1,#2)(#3)(#4,#5)[#6]{%
+fill ((#3w,0) rotated #4{dir (#4+90)}..
+{dir ((#4+#5)/2+90)}(#3w,0) rotated ((#4+#5)/2){dir ((#4+#5)/2+90)}..
+{dir (#5+90)}(#3w,0) rotated #5--(0,0)--cycle) shifted (#1w,#2w) withcolor #6;}%
+\def\mpGcircarc #1(#2)(#3,#4){path p.ca#1;%
+p.ca#1=((#2*w,0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(#2*w,0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(#2*w,0) rotated #4) shifted gp#1;
+if not hwmode:draw p.ca#1; else: for hwrpt=1 upto hwtm:draw hand_writing_path(p.ca#1);endfor;fi;}%
+\def\mpGcircarcC #1(#2)(#3,#4)[#5]{path p.ca#1;%
+p.ca#1=((#2*w,0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(#2*w,0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(#2*w,0) rotated #4) shifted gp#1;
+if not hwmode:draw p.ca#1 withcolor #5;else:
+for hwrpt=1 upto hwtm:path tmphwp;tmphwp=hand_writing_path(p.ca#1);draw tmphwp withcolor #5;endfor;fi;}%
+\def\mpGcircarcCclosed #1(#2)(#3,#4)[#5]{path p.ca#1;%
+p.ca#1=((#2*w,0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(#2*w,0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(#2*w,0) rotated #4--(#2*w,0) rotated #3{dir (#3+90)}) shifted gp#1;
+if not hwmode:draw p.ca#1 withcolor #5;else:
+for hwrpt=1 upto hwtm:path tmphwp;tmphwp=hand_writing_path(p.ca#1);draw tmphwp withcolor #5;endfor;fi;}%
+\def\mpGcirclarc #1#2(#3,#4){path p.ca#1#2;%
+p.ca#1#2=((length(gp#1-gp#2),0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(length(gp#1-gp#2),0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(length(gp#1-gp#2),0) rotated #4) shifted gp#1;
+if not hwmode:draw p.ca#1#2; else: for hwrpt=1 upto hwtm:draw hand_writing_path(p.ca#1#2);endfor;fi;}%
+\def\mpGcirclarcG #1#2(#3#4){path p.ca#1#2;numeric aglA,aglB;aglA=angle(gp#3-gp#1);aglB=angle(gp#4-gp#1);%
+p.ca#1#2=((length(gp#1-gp#2),0) rotated aglA{dir (aglA+90)}..
+{dir ((aglA+aglB)/2+90)}(length(gp#1-gp#2),0) rotated ((aglA+aglB)/2){dir ((aglA+aglB)/2+90)}..
+{dir (aglB+90)}(length(gp#1-gp#2),0) rotated aglB) shifted gp#1;
+if not hwmode:draw p.ca#1#2; else: for hwrpt=1 upto hwtm:draw hand_writing_path(p.ca#1#2);endfor;fi;}%
+\def\mpGcirclarcGC #1#2(#3#4)[#5]{path p.ca#1#2;numeric aglA,aglB;aglA=angle(gp#3-gp#1);aglB=angle(gp#4-gp#1);%
+p.ca#1#2=((length(gp#1-gp#2),0) rotated aglA{dir (aglA+90)}..
+{dir ((aglA+aglB)/2+90)}(length(gp#1-gp#2),0) rotated ((aglA+aglB)/2){dir ((aglA+aglB)/2+90)}..
+{dir (aglB+90)}(length(gp#1-gp#2),0) rotated aglB) shifted gp#1;
+if not hwmode:draw p.ca#1#2 withcolor #5; else: for hwrpt=1 upto hwtm:path tmphwp;tmphwp=hand_writing_path(p.ca#1#2);draw tmphwp withcolor #5;endfor;fi;}%
+\def\mpGcirclarcC #1#2(#3,#4)[#5]{path p.ca#1#2;%
+p.ca#1#2=((length(gp#1-gp#2),0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(length(gp#1-gp#2),0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(length(gp#1-gp#2),0) rotated #4) shifted gp#1;
+if not hwmode:draw p.ca#1#2 withcolor #5; else: for hwrpt=1 upto hwtm:path tmpP;tmpP=hand_writing_path(p.ca#1#2);draw tmpP withcolor #5;endfor;fi;}%
+\def\mpGcirclarcCclosed #1#2(#3,#4)[#5]{path p.ca#1#2,p.cb#1#2;%
+%p.ca#1#2=((0,0)--(length(gp#1-gp#2),0) rotated #3{dir (#3+90)}..
+%{dir ((#3+#4)/2+90)}(length(gp#1-gp#2),0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+%{dir (#4+90)}(length(gp#1-gp#2),0) rotated #4--(0,0)) shifted gp#1;
+p.ca#1#2=((length(gp#1-gp#2),0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(length(gp#1-gp#2),0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(length(gp#1-gp#2),0) rotated #4) shifted gp#1;
+p.cb#1#2=((length(gp#1-gp#2),0) rotated #3--(length(gp#1-gp#2),0) rotated #4) shifted gp#1;
+if not hwmode:draw p.ca#1#2 withcolor #5;draw p.cb#1#2 withcolor #5; else: 
+for hwrpt=1 upto hwtm:path tmpP,tmpQ;tmpP=hand_writing_path(p.ca#1#2);tmpQ=hand_writing_path(p.cb#1#2);
+draw tmpP withcolor #5;draw tmpQ withcolor #5;endfor;fi;}%
+\def\mpGcircarcd #1(#2)(#3,#4){%
+draw ((#2w,0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(#2w,0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(#2w,0) rotated #4) shifted gp#1 dashed withdots scaled .4;}%
+% Draw arc for Construction
+\def\mpSarc #1(#2){%
+draw gp#1+(gp#2-gp#1) rotated -15..gp#2..gp#1+(gp#2-gp#1) rotated 15 withcolor 0.5white;}%
+\def\mpSarcd #1(#2){%
+draw gp#1+(gp#2-gp#1) rotated -5..gp#2..gp#1+(gp#2-gp#1) rotated 5 dashed withdots scaled .4;}%
+% Draw Polygon
+%\def\mpGpolyg #1#2(#3)[#4]{%
+\def\mpGpolyg #1#2(#3){%
+path tmpPoly;
+numeric tmpRotagl;tmpRotagl=360/#3;
+pair tmpPnt[];tmpPnt[1]=gp#2;tmpPnt[#3+1]=gp#2;
+for i=2 upto #3:tmpPnt[i]=tmpPnt[i-1] rotatedabout(gp#1,tmpRotagl);endfor;
+tmpPoly=tmpPnt[1] for i=2 upto #3:--tmpPnt[i] endfor --cycle;
+if not hwmode:draw tmpPoly;else:
+for i=1 upto #3:
+for hwrpt=1 upto hwtm:path tmpPth;tmpPth=hand_writing_path(tmpPnt[i]--tmpPnt[i+1]);draw tmpPth;endfor;
+endfor;fi;
+}
+%\def\mpGpolygC #1#2(#3)[#4][#5]{%
+\def\mpGpolygC #1#2(#3)[#4]{%
+path tmpPoly;numeric tmpRotagl;tmpRotagl=360/#3;pair tmpPnt[];tmpPnt[1]=gp#2;tmpPnt[#3+1]=gp#2;
+for i=2 upto #3:tmpPnt[i]=tmpPnt[i-1] rotatedabout(gp#1,tmpRotagl);endfor;
+tmpPoly=tmpPnt[1] for i=2 upto #3:--tmpPnt[i] endfor --cycle;
+if not hwmode:draw tmpPoly withcolor #4;else:
+for i=1 upto #3:
+for hwrpt=1 upto hwtm:path tmpPth;tmpPth=hand_writing_path(tmpPnt[i]--tmpPnt[i+1]);draw tmpPth withcolor #4;endfor;
+endfor;fi;
+}
+\def\mpGraphAxis(#1,#2)(#3,#4){numeric tmpv;tmpv=#1+(#3);\mpParrow(#3,0)(tmpv,0) tmpv:=#2+(#4);\mpParrow(0,#4)(0,tmpv)}
+% Draw Lattices
+\def\mpPlattice(#1,#2)(#3,#4){%
+for x=#1 upto #3-1:for y=#2 upto #4-1:%
+draw (((0,1)--(0,0)--(1,0)) shifted (x,y)) scaled w;
+endfor;endfor;draw ((#1,#4)--(#3,#4)--(#3,#2)) scaled w;}%
+\def\mpPlatticeC(#1,#2)(#3,#4)[#5]{%
+for x=#1 upto #3-1:for y=#2 upto #4-1:%
+draw (((0,1)--(0,0)--(1,0)) shifted (x,y)) scaled w withcolor #5;
+endfor;endfor;draw ((#1,#4)--(#3,#4)--(#3,#2)) scaled w withcolor #5;}%
+\def\mpPlatticeX(#1,#2)(#3,#4){%
+for x=#1 upto #3-1:for y=#2 upto #4-1:%
+draw (((0,1)--(0,0)--(1,0)--cycle) shifted (x,y)) scaled w;
+draw (((0,0)--(1,1)) shifted (x,y)) scaled w;
+endfor;endfor;draw ((#1,#4)--(#3,#4)--(#3,#2)) scaled w;}%
+\def\mpPlatticeXC(#1,#2)(#3,#4)[#5]{%
+for x=#1 upto #3-1:for y=#2 upto #4-1:%
+draw (((0,1)--(0,0)--(1,0)--cycle) shifted (x,y)) scaled w withcolor #5;
+draw (((0,0)--(1,1)) shifted (x,y)) scaled w withcolor #5;
+endfor;endfor;draw ((#1,#4)--(#3,#4)--(#3,#2)) scaled w withcolor #5;}%
+%
+% divide Line Mark
+\def\mpGdivlineMark #1#2(#3){%
+for i=1 upto #3-1:
+fill (fullcircle scaled 0.4mm)%
+% (1pt*unitvector(gp#1-gp#2) rotated 90 --1pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+(i/#3)*(gp#2-gp#1));
+endfor;
+for i=1 upto #3:
+draw (1.5pt*unitvector(gp#1-gp#2) rotated 90 --1.5pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+((i-0.5)/#3)*(gp#2-gp#1));
+endfor;
+}%
+\def\mpGdivlineMarkk #1#2(#3){%
+for i=1 upto #3-1:
+fill (fullcircle scaled 0.6mm)%
+% (1pt*unitvector(gp#1-gp#2) rotated 90 --1pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+(i/#3)*(gp#2-gp#1));
+endfor;
+for i=1 upto #3:
+draw (1.5pt*unitvector(gp#1-gp#2) rotated 90 --1.5pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+((i-0.5)/#3)*(gp#2-gp#1)+0.6pt*unitvector(gp#1-gp#2));
+draw (1.5pt*unitvector(gp#1-gp#2) rotated 90 --1.5pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+((i-0.5)/#3)*(gp#2-gp#1)-0.6pt*unitvector(gp#1-gp#2));
+endfor;
+}%
+\def\mpGdivlineMarkkC #1#2(#3)[#4]{%
+for i=1 upto #3-1:
+fill (fullcircle scaled 0.6mm)%
+% (1pt*unitvector(gp#1-gp#2) rotated 90 --1pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+(i/#3)*(gp#2-gp#1)) withcolor #4;
+endfor;
+for i=1 upto #3:
+draw (1.5pt*unitvector(gp#1-gp#2) rotated 90 --1.5pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+((i-0.5)/#3)*(gp#2-gp#1)+0.6pt*unitvector(gp#1-gp#2)) withcolor #4;
+draw (1.5pt*unitvector(gp#1-gp#2) rotated 90 --1.5pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+((i-0.5)/#3)*(gp#2-gp#1)-0.6pt*unitvector(gp#1-gp#2)) withcolor #4;
+endfor;
+}%
+\def\mpGdivlineMarkkCX #1#2(#3)[#4](#5,#6){%
+for i=1 upto #3-1:
+fill (fullcircle scaled 0.6mm)%
+% (1pt*unitvector(gp#1-gp#2) rotated 90 --1pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+(i/#3)*(gp#2-gp#1)) withcolor #4;
+endfor;
+for i=1 upto #3:
+draw (#6*1.5pt*unitvector(gp#1-gp#2) rotated 90 --#6*1.5pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+((i-0.5)/#3)*(gp#2-gp#1)+#5*0.6pt*unitvector(gp#1-gp#2)) withcolor #4;
+draw (#6*1.5pt*unitvector(gp#1-gp#2) rotated 90 --#6*1.5pt*unitvector(gp#1-gp#2) rotated -90) %
+shifted (gp#1+((i-0.5)/#3)*(gp#2-gp#1)-#5*0.6pt*unitvector(gp#1-gp#2)) withcolor #4;
+endfor;
+}%
+\def\mpGdivlineMarkks #1#2#3(#4){%
+\mpGdivlineMarkk#1#2(#4)\ifx#3\empty\else\mpGdivlineMarkks#3(#4)\fi}
+\def\mpGdivlineMarkkCs #1#2#3(#4)[#5]{%
+\mpGdivlineMarkkC#1#2(#4)[#5]\ifx#3\empty\else\mpGdivlineMarkkCs#3(#4)[#5]\fi}
+\def\mpGdivCirclMark #1#2(#3)[#4]{%
+path tmpDivLine;tmpDivLine=(-1mm,0)--(1mm,0);pair tmpPnt;tmpPnt=(length(gp#2-gp#1),0);
+for i=0 upto #3-1:numeric rotAgl;rotAgl=#4+360/#3*i;draw (tmpDivLine rotated rotAgl) shifted (tmpPnt rotated rotAgl);endfor;
+}
+ % fill
+ \def\mpGfill#1#2#3{if not hwmode:fill gp#1--gp#2--gp#3--cycle;
+ else:fill hand_writing_path(gp#1--gp#2--gp#3--cycle);fi;}
+\def\mpGfillC[#1]#2#3#4{if not hwmode:fill gp#2--gp#3--gp#4--cycle withcolor #1;
+ else:path tmpPth;tmpPth=hand_writing_path(gp#2--gp#3--gp#4--cycle);fill tmpPth withcolor #1;fi;}
+\def\mpGfillQC[#1]#2#3#4#5{if not hwmode:fill gp#2--gp#3--gp#4--gp#5--cycle withcolor #1;
+ else:path tmpPth;tmpPth=hand_writing_path(gp#2--gp#3--gp#4--gp#5--cycle);fill tmpPth withcolor #1;fi;}
+\def\mpGfillHC[#1]#2#3#4#5#6#7{if not hwmode:fill gp#2--gp#3--gp#4--gp#5--gp#6--gp#7--cycle withcolor #1;
+ else:path tmpPth;tmpPth=hand_writing_path(gp#2--gp#3--gp#4--gp#5--gp#6--gp#7--cycle);fill tmpPth withcolor #1;fi;}
+\def\mpGfillCX(#1)#2#3#4{if not hwmode:fill gp#2--gp#3--gp#4--cycle withcolor #1;
+ else:path tmpPth;tmpPth=hand_writing_path(gp#2--gp#3--gp#4--cycle);fill tmpPth withcolor #1;fi;}
+ \def\mpGfills#1#2#3#4.{\mpGfill#1#2#3\ifx#4\empty\else\mpGfills#1#3#4.\fi}
+ \def\mpGfillCs[#1]#2#3#4#5.{\mpGfillC[#1]#2#3#4\mpGlineC #2#4[#1]\ifx#5\empty\else\mpGfillCs[#1]#2#4#5.\fi}
+\def\mpGfillCXs(#1)#2#3#4#5.{\mpGfillCX(#1)#2#3#4\mpGlineC #2#4[#1]\ifx#5\empty\else\mpGfillCXs(#1)#2#4#5.\fi}
+\def\mpGfillcirclC[#1]#2#3{if not hwmode:
+fill fullcircle scaled (2*length(gp#2-gp#3)) shifted gp#2 withcolor #1;
+else:for hwrpt=1 upto hwtm:
+path tmpp;tmpp=hand_writing_path(fullcircle scaled (2*length(gp#2-gp#3)) shifted gp#2);fill tmpp withcolor #1;
+endfor;fi;}%
+\def\mpPfillCircC(#1,#2)(#3)[#4]{if not hwmode:
+fill fullcircle scaled (2*(#3)*w) shifted ((#1,#2) scaled w) withcolor #4;
+else:for hwrpt=1 upto hwtm:
+path tmpp;tmpp=hand_writing_path(fullcircle scaled (2*(#3)*w) shifted ((#1,#2) scaled w));fill tmpp withcolor #4;
+endfor;fi;}%
+\def\mpGfillcircC[#1]#2(#3){if not hwmode:
+fill fullcircle scaled (2*(#3)*w) shifted gp#2 withcolor #1;
+else:for hwrpt=1 upto hwtm:
+path tmpp;tmpp=hand_writing_path(fullcircle scaled (2*(#3)*w) shifted gp#2);fill tmpp withcolor #1;
+endfor;fi;}%
+\def\mpGfillcirclC[#1]#2#3{if not hwmode:
+fill fullcircle scaled (2*length(gp#3-gp#2)) shifted gp#2 withcolor #1;
+else:for hwrpt=1 upto hwtm:
+path tmpp;tmpp=hand_writing_path(fullcircle scaled (2*length(gp#3-gp#2)) shifted gp#2);fill tmpp withcolor #1;
+endfor;fi;}%
+\def\mpGfillcircarcC #1(#2)(#3,#4)[#5]{path p.ca#1;%
+p.ca#1=((0,0)--(#2*w,0) rotated #3{dir (#3+90)}..
+%{dir ((#3+#4)/2+90)}
+(#2*w,0) rotated ((#3+#4)/2)%{dir ((#3+#4)/2+90)}
+..{dir (#4+90)}(#2*w,0) rotated #4 --cycle) shifted gp#1;
+%if not hwmode:
+fill p.ca#1 withcolor #5;
+%else: for hwrpt=1 upto hwtm:path tmpP;tmpP=hand_writing_path(p.ca#1#2);fill tmpP withcolor #5;endfor;fi;
+}%
+\def\mpGfillcirclarcC #1#2(#3,#4)[#5]{path p.ca#1#2;%
+p.ca#1#2=((0,0)--((length(gp#1-gp#2),0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(length(gp#1-gp#2),0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(length(gp#1-gp#2),0) rotated #4) --cycle) shifted gp#1;
+if not hwmode:fill p.ca#1#2 withcolor #5;
+else: for hwrpt=1 upto hwtm:path tmpP;tmpP=hand_writing_path(p.ca#1#2);fill tmpP withcolor #5;endfor;fi;}%
+\def\mpGfillcirclarcCX #1#2(#3,#4)(#5){path p.ca#1#2;%
+p.ca#1#2=(((length(gp#1-gp#2),0) rotated #3{dir (#3+90)}..
+{dir ((#3+#4)/2+90)}(length(gp#1-gp#2),0) rotated ((#3+#4)/2){dir ((#3+#4)/2+90)}..
+{dir (#4+90)}(length(gp#1-gp#2),0) rotated #4) --cycle) shifted gp#1;
+if not hwmode:fill p.ca#1#2 withcolor #5;
+else: for hwrpt=1 upto hwtm:path tmpP;tmpP=hand_writing_path(p.ca#1#2);fill tmpP withcolor #5;endfor;fi;}%
+\def\mpGfillcirclarcGC #1#2(#3#4)[#5]{path p.ca#1#2;%
+numeric angS,angG;angS=angle(gp#3-gp#1);angG=angle(gp#4-gp#1);
+p.ca#1#2=((0,0)--((length(gp#1-gp#2),0) rotated angS{dir (angS+90)}..
+{dir ((angS+angG)/2+90)}(length(gp#1-gp#2),0) rotated ((angS+angG)/2){dir ((angS+angG)/2+90)}..
+{dir (angG+90)}(length(gp#1-gp#2),0) rotated angG) --cycle) shifted gp#1;
+if not hwmode:fill p.ca#1#2 withcolor #5;
+else: for hwrpt=1 upto hwtm:path tmpP;tmpP=hand_writing_path(p.ca#1#2);fill tmpP withcolor #5;endfor;fi;}%
+%
+% picture move,etc...
+ \def\mpPpictMove(#1,#2){currentpicture := currentpicture shifted (#1w,#2w);}
+ \def\mpGpictMove #1{currentpicture := currentpicture shifted gp#1;}
+ \def\mpPictSave #1{picture p.#1;p.#1=currentpicture;}
+ \def\mpPictSaveCls #1{picture p.#1;p.#1=currentpicture;currentpicture:=nullpicture;}
+ \def\mpPictDraw #1{draw p.#1;}
+ \def\mpPpictDraw #1(#2,#3){draw p.#1 shifted (#2w,#3w);}
+ \def\mpPpictDrawScale #1(#2,#3)[#4]{draw p.#1 scaled #4 shifted (#2w,#3w);}
+ \def\mpPpictDrawXYScale #1(#2,#3)[#4,#5]{draw p.#1 xscaled #4 yscaled #5 shifted (#2w,#3w);} 
+ \def\mpPpictDrawScaleFlip #1(#2,#3)[#4,#5]{draw p.#1 scaled #4 reflectedabout((0,0),(1,0) rotated #5) shifted (#2w,#3w);}
+ \def\mpGpictDraw #1(#2){draw p.#1 shifted gp#2;}
+% mpPct シリーズ:pic.#? で picture を自在に操りたい。
+\def\mpPctCopy #1{picture pct.#1;pct.#1=currentpicture;}%currentpicture:=nullpicture;
+\def\mpPctScaled(#1){picture tmppct;tmppct=currentpicture;currentpicture:=nullpicture;draw tmppct scaled (#1);}
+\def\mpPctScaledC(#1)[#2]{picture tmppct;tmppct=currentpicture;currentpicture:=nullpicture;draw tmppct scaled (#1) withcolor #2;}
+\def\mpPctXCopy #1{picture pct.#1;pct.#1=currentpicture;currentpicture:=nullpicture;}
+\def\mpPctDraw #1{draw pct.#1;}
+\def\mpPctDrawC #1[#2]{draw pct.#1 withcolor #2;}
+\def\mpPctDrawGShifted #1(#2){draw pct.#1 shifted gp.#2;}
+\def\mpPctDrawPShifted #1(#2,#3){draw pct.#1 shifted ((#2,#3) scaled w);}
+\def\mpPctDrawRot #1(#2){draw pct.#1 rotated #2;}
+\def\mpPctDrawRotAbt #1(#2,#3){draw pct.#1 rotatedabout(gp#2,#3);}
+\def\mpPctDrawRef #1(#2,#3){draw pct.#1 reflectedabout(gp#2,gp#3);}%
+ % label,text,...
+%
+%label("3",(z.B+z.A)/2);%OK
+%label(btex 3 etex,(z.B+z.A)/2);%OK
+%label(btex $3$ etex,(z.B+z.A)/2);%OK
+%
+\def\mpGptlabel#1(#2){label(textext("#1"),gp#1+(3mm,0) rotated (#2*30));}
+\def\mpGptlabelC#1(#2)[#3]{picture tmplbl;tmplbl=thelabel(textext("#1"),(0,0));draw tmplbl shifted (gp#1+(3mm,0) rotated (#2*30)) withcolor #3;}
+\def\mpGptlabelX#1(#2)[#3]{label(textext("#1"),gp#1+(#3mm,0) rotated (#2*30));}
+\def\mpGptlabelT#1(#2)(#3){label(textext("#3"),gp#1+(3mm,0) rotated (#2*30));}
+\def\mpGptlabels#1(#2)#3.{\mpGptlabel#1(#2)\ifx#3\empty\else\mpGptlabels#3.\fi}%
+\def\mpGptlabelXs#1(#2)#3[#4]{\mpGptlabelX#1(#2)[#4]\ifx#3\empty\else\mpGptlabelXs#3[#4]\fi}%
+\def\mpGptlabelTs#1(#2)(#3)#4.{\mpGptlabelT#1(#2)(#3)\ifx#4\empty\else\mpGptlabelTs#4.\fi}%
+\def\mpPputtxt(#1,#2)(#3){label(textext("#3"),(#1,#2) scaled w);}
+\def\mpPputtxtX(#1,#2)(#3)[#4]{%
+picture tmplbl;tmplbl=thelabel(textext("#3"),(0,0));draw tmplbl scaled #4 shifted ((#1,#2) scaled w);}
+\def\mpPputtxtT(#1,#2)[#3]{label(textext("#3"),(#1,#2) scaled w);}
+\def\mpGputtxt #1(#2){label(textext("#2"),gp#1);}
+\def\mpGputtxts #1(#2)#3.{\mpGputtxt #1(#2)\ifx#3\empty\else\mpGputtxts #3.\fi}
+\def\mpGputtxtX #1(#2)[#3]{label(textext("#2"),gp#1+(3mm,0) rotated (#3*30));}
+\def\mpGputtxtXL #1(#2)[#3]{label.lft(textext("#2"),gp#1+(1mm,0) rotated (#3*30));}
+\def\mpGputtxtXR #1(#2)[#3]{label.rt(textext("#2"),gp#1+(1mm,0) rotated (#3*30));}
+\def\mpGputtxtRX #1(#2)[#3,#4]{label(textext("#2"),gp#1+(#3w,0) rotated (#4*30));}
+\def\mpGputtxtS #1(#2){label(textext("#2"),gp#1);}
+\def\mpPputtxtSX (#1,#2)(#3)[#4]{picture tmpp;tmpp=thelabel(textext("#3"),(0,0));draw tmpp scaled #4 shifted (#1*w,#2*w);}
+\def\mpPputtxtSXC (#1,#2)(#3)[#4][#5]{picture tmpp;tmpp=thelabel(textext("#3"),(0,0));draw tmpp scaled #4 shifted (#1*w,#2*w) withcolor #5;}
+\def\mpPputtxtSXCLR (#1,#2)(#3,#4)[#5][#6]{picture tmppL,tmppR;
+tmppL=thelabel.lft(textext("#3"),(0,0));tmppR=thelabel.rt(textext("#4"),(0,0));
+draw tmppL scaled #5 shifted (#1*w+3pt*#5,#2*w) withcolor #6;
+draw tmppR scaled #5 shifted (#1*w-5pt*#5,#2*w) withcolor #6;}
+\def\mpGputtxtSX #1(#2)[#3]{picture tmpp;tmpp=thelabel(textext("#2"),(0,0));draw tmpp scaled #3 shifted gp#1;}
+\def\mpGputtxtSXC #1(#2)[#3][#4]{picture tmpp;tmpp=thelabel(textext("#2"),(0,0));draw tmpp scaled #3 shifted gp#1 withcolor #4;}
+\def\mpGputtxtSXCR #1(#2)[#3][#4][#5]{picture tmpp;tmpp=thelabel(textext("#2"),(0,0));draw tmpp scaled #3 rotated #5 shifted gp#1 withcolor #4;}
+% Length Label
+\def\mpGlinelabel #1#2(#3){%
+label(textext("#3"),(gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90);}%
+\def\mpGlineLabel #1#2(#3){%
+label(textext("$"&"#3"&"$"),(gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90);}%
+\def\mpGlineLabelC #1#2(#3)[#4]{%
+picture tmpLbl;tmpLbl=thelabel(textext("$"&"#3"&"$"),(gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90);draw tmpLbl withcolor #4}%
+\def\mpGlineLabelCX #1#2(#3)[#4](#5){%
+picture tmpLbl;tmpLbl=thelabel(textext("$"&"#3"&"$"),(0,0)) scaled #5;
+draw tmpLbl shifted ((gp#1+gp#2)/2+#5*3mm*unitvector(gp#1-gp#2) rotated 90) withcolor #4;}%
+\def\mpGlineLabelFC #1#2(#3)[#4](#5){%
+picture tmpLbl;tmpLbl=thelabel(textext("$"&"#3"&"$",infont "#5"),(gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90);draw tmpLbl withcolor #4}%
+\def\mpGlineLabelX #1#2(#3)[#4]{%
+label(textext("$"&"#3"&"$"),(gp#1+gp#2)/2+#4mm*unitvector(gp#1-gp#2) rotated 90);}%
+\def\mpGlineLabelXC #1#2(#3)[#4][#5]{%
+draw thelabel(textext("$"&"#3"&"$"),(0,0)) shifted ((gp#1+gp#2)/2+#4mm*unitvector(gp#1-gp#2) rotated 90) withcolor #5;}%
+\def\mpGlineLabelS #1#2(#3)[#4]{%
+picture tmplbl;tmplbl=thelabel(textext("$"&"#3"&"$"),(0,0));
+draw tmplbl scaled #4 shifted ((gp#1+gp#2)/2+(1/2+#4/3)*(4mm*unitvector(gp#1-gp#2) rotated 90));}%
+\def\mpGlenLabel #1#2(#3){%
+numeric tmpagl;tmpagl=angle((length(gp#2-gp#1),12mm));
+draw gp#1{dir (angle (gp#2-gp#1)) rotated -tmpagl}..%
+(1/2[gp#1,gp#2] + (3mm,0) rotated (angle (gp#1-gp#2)+90) )..
+{dir (angle (gp#2-gp#1)) rotated tmpagl}gp#2 dashed withdots scaled .5 withpen  pencircle scaled 1pt;
+%fill fullcircle scaled 6mm shifted ((gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90) withcolor white;
+label(textext("$"&"#3"&"$"),(gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90);
+%label(btex #3 etex,(gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90);
+}%
+\def\mpGlenLabelBW #1#2(#3)[#4,#5]{%
+numeric tmpagl;tmpagl=angle(gp#2+(12mm,0) rotated (angle (gp#2-gp#1)+90)-gp#1)-angle(gp#2-gp#1);
+draw gp#1{dir (angle (gp#2-gp#1)) rotated -tmpagl}..%
+(1/2[gp#1,gp#2] + (3mm,0) rotated (angle (gp#1-gp#2)+90) )..
+{dir (angle (gp#2-gp#1)) rotated tmpagl}gp#2 dashed withdots scaled .5 withpen  pencircle scaled 1pt;
+fill fullcircle xscaled #4mm yscaled #5mm shifted ((gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90) withcolor white;
+label(textext("$"&"#3"&"$"),(gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90);
+%label(btex #3 etex,(gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90);
+}%
+\def\mpGlenLabelX #1#2(#3)[#4]{%
+draw gp#1{dir (angle (gp#2-gp#1)) rotated (-30*#4)}..%
+(1/2[gp#1,gp#2] + (3mm,0) rotated (angle (gp#1-gp#2)+90) )..
+{dir (angle (gp#2-gp#1)) rotated (30*#4)}gp#2 dashed withdots scaled .5 withpen  pencircle scaled 1pt;
+fill fullcircle scaled 6mm shifted ((gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90) withcolor white;
+label(textext("$"&"#3"&"$"),(gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90);
+}%
+\def\mpGlenLabelMP #1#2(#3){%
+draw gp#1{dir (angle (gp#2-gp#1)) rotated -30}..%
+(1/2[gp#1,gp#2] + (3mm,0) rotated (angle (gp#1-gp#2)+90) )..
+{dir (angle (gp#2-gp#1)) rotated 30}gp#2 dashed withdots scaled .5;
+label(textext("$"&decimal(#3)&"$"),(gp#1+gp#2)/2+4mm*unitvector(gp#1-gp#2) rotated 90);
+}%
+\def\mpGlineLabels#1#2(#3)#4.{\mpGlineLabel#1#2(#3)\ifx#4\@empty\else\mpGlineLabels#4.\fi}%
+\def\mpGlineLabelXs#1#2(#3)#4[#5]{\mpGlineLabelX#1#2(#3)[#5]\ifx#4\@empty\else\mpGlineLabelXs#4[#5]\fi}%
+\def\mpGlineLabelSs#1#2(#3)#4[#5]{\mpGlineLabelS#1#2(#3)[#5]\ifx#4\@empty\else\mpGlineLabelSs#4[#5]\fi}%
+\def\mpGlenLabels#1#2(#3)#4.{\mpGlenLabel#1#2(#3)\ifx#4\@empty\else\mpGlenLabels#4.\fi}%
+\def\mpGlenLabelXs#1#2(#3)#4[#5]{\mpGlenLabelX#1#2(#3)[#5]\ifx#4\@empty\else\mpGlenLabelXs#4[#5]\fi}%
+\def\mpGlenLabelBWs#1#2(#3)#4[#5,#6]{\mpGlenLabelBW#1#2(#3)[#5,#6]\ifx#4\@empty\else\mpGlenLabelBWs#4[#5,#6]\fi}%
+% angle Label
+\def\mpGangleLabel #1#2#3(#4){%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=(5mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+%label(textext("$"&"#4"&"$"),gp#1+dumv);
+label(textext("$#4$"),gp#1+dumv);
+}%
+\def\mpGangleLabelX #1#2#3(#4)[#5]{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=(#5*3mm+2mm)*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+label(textext("$"&"#4"&"$"),gp#1+dumv);
+}%
+\def\mpGangleLabelXR #1#2#3(#4)[#5](#6){%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=(#5*3mm+2mm)*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1)) rotated #6;
+label(textext("$"&"#4"&"$"),gp#1+dumv);
+}%
+\def\mpGangleLabelXC #1#2#3(#4)[#5][#6]{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=(#5*3mm+2mm)*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+picture tmppic;tmppic=thelabel(textext("$"&"#4"&"$"),gp#1+dumv);draw tmppic withcolor #6;
+}%
+\def\mpGangleLabelXXC #1#2#3(#4)[#5][#6][#7]{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=(#5*3mm+2mm)*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+picture tmppic;tmppic=thelabel(textext("#4"),(0,0));draw tmppic scaled #7 shifted (gp#1+dumv) withcolor #6;
+}%
+\def\mpGanglelabelXXC #1#2#3(#4)[#5][#6][#7]{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=(#5*3mm+2mm)*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+picture tmppic;tmppic=thelabel(textext("$\kaku{#4}$"),(0,0));draw tmppic scaled #7 shifted (gp#1+dumv) withcolor #6;
+}%%
+% Draw Vertical Mark
+\def\mpGverticalMark #1#2#3{path tmp.p;%
+tmp.p=((1/2,1/2)--(2/2,0)--(1/2,-1/2)) zscaled (2mm*(unitvector(gp#1-gp#2)+unitvector(gp#3-gp#2))) shifted gp#2;
+if not hwmode:draw tmp.p;else:for hwrpt=1 upto hwtm:draw hand_writing_path(tmp.p);endfor;fi;
+}%
+\def\mpGverticalMarkX #1#2#3[#4]{path tmp.p;%
+tmp.p=((1/2,1/2)--(2/2,0)--(1/2,-1/2)) zscaled (#4*2mm*(unitvector(gp#1-gp#2)+unitvector(gp#3-gp#2))) shifted gp#2;
+if not hwmode:draw tmp.p;else:for hwrpt=1 upto hwtm:draw hand_writing_path(tmp.p);endfor;fi;
+}%
+\def\mpGverticalMarkC #1#2#3[#4]{path tmp.p;%
+tmp.p=((1/2,1/2)--(2/2,0)--(1/2,-1/2)) zscaled (2mm*(unitvector(gp#1-gp#2)+unitvector(gp#3-gp#2))) shifted gp#2;
+if not hwmode:draw tmp.p withcolor #4;
+else:for hwrpt=1 upto hwtm:
+path tmpp;tmpp=hand_writing_path(tmp.p);draw tmpp withcolor #4;endfor;fi;
+}%
+\def\mpGverticalMarkD #1#2#3{path tmp.p;%
+tmp.p=((unitvector(gp#1-gp#2)--unitvector(gp#1-gp#2)+unitvector(gp#3-gp#2)--unitvector(gp#3-gp#2)) scaled 3mm) shifted gp#2;
+if not hwmode:draw tmp.p;else:for hwrpt=1 upto hwtm:draw hand_writing_path(tmp.p);endfor;fi;
+}%
+\def\mpGverticalMarks #1#2#3#4.{\mpGverticalMark #1#2#3\ifx#4\@empty\else\mpGverticalMarks#4.\fi}%
+\def\mpGverticalMarkCs #1#2#3#4[#5]{\mpGverticalMarkC #1#2#3[#5]\ifx#4\@empty\else\mpGverticalMarkCs#4[#5]\fi}%
+% parallelmarks...
+\def\mpGparallelMark #1#2{if not hwmode:draw (((-1mm,-1mm)--(1mm,0)--(-1mm,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2);
+else:hwp.dum:=(((-1mm,-1mm)--(1mm,0)--(-1mm,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2);
+for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;fi;}
+\def\mpGparallelMarkC #1#2[#3]{%
+if not hwmode:
+draw (((-1mm,-1mm)--(1mm,0)--(-1mm,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2) withcolor #3;
+else:hwp.dum:=(((-1mm,-1mm)--(1mm,0)--(-1mm,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2);
+for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path(hwp.dum);draw tmpp withcolor #3;endfor;fi;}
+ \def\mpGparallelMarkk #1#2{if not hwmode:
+draw (((-1mm,-1mm)--(1mm,0)--(-1mm,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(0.75mm,0) rotated angle(gp#2-gp#1));
+draw (((-1mm,-1mm)--(1mm,0)--(-1mm,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(-0.75mm,0) rotated angle(gp#2-gp#1));
+ else:
+hwp.dum:=(((-1mm,-1mm)--(1mm,0)--(-1mm,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(0.5mm,0) rotated angle(gp#2-gp#1));
+ for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;
+hwp.dum:=(((-1mm,-1mm)--(1mm,0)--(-1mm,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2-(0.5mm,0) rotated angle(gp#2-gp#1));
+ for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;fi;}
+\def\mpGparallelMarks#1#2#3.{\mpGparallelMark#1#2\ifx#3\empty\else\mpGparallelMarks#3.\fi}
+\def\mpGparallelMarkks#1#2#3.{\mpGparallelMarkk#1#2\ifx#3\empty\else\mpGparallelMarkks#3.\fi}
+\def\mpGparallelMarkCs#1#2#3[#4]{\mpGparallelMarkC#1#2[#4]\ifx#3\empty\else\mpGparallelMarkCs#3[#4]\fi}
+%
+% lineMark
+\def\mpGlineMark #1#2{if not hwmode:draw (((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2);
+ else:hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2);
+ for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;fi;}
+\def\mpGlineMarkC #1#2[#3]{if not hwmode:%
+draw (((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2) withcolor #3;
+else:hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2);
+for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path(hwp.dum);draw tmpp withcolor #3;endfor;fi;}
+\def\mpGlineMarkkC #1#2[#3]{if not hwmode:%
+draw (((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(0.5mm,0) rotated angle(gp#2-gp#1)) withcolor #3;
+draw (((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(-0.5mm,0) rotated angle(gp#2-gp#1)) withcolor #3;
+else:hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(0.5mm,0) rotated angle(gp#2-gp#1));
+for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path(hwp.dum);draw tmpp withcolor #3;endfor;
+hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(-0.5mm,0) rotated angle(gp#2-gp#1));
+for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path(hwp.dum);draw tmpp withcolor #3;endfor;fi;}
+\def\mpGlineMarkkCX #1#2[#3](#4){if not hwmode:%
+draw (((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+((#4*0.5)mm,0) rotated angle(gp#2-gp#1)) withcolor #3;
+draw (((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+((#4*(-0.5))mm,0) rotated angle(gp#2-gp#1)) withcolor #3;
+else:hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+((#4*0.5)mm,0) rotated angle(gp#2-gp#1));
+for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path(hwp.dum);draw tmpp withcolor #3;endfor;
+hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+((#4*(-0.5))mm,0) rotated angle(gp#2-gp#1));
+for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path(hwp.dum);draw tmpp withcolor #3;endfor;fi;}
+\def\mpGlineMarkk #1#2{\mpGlineMarkkC #1#2[black]}
+\def\mpGlineMarkkkC #1#2[#3]{if not hwmode:%
+draw (((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(1mm,0) rotated angle(gp#2-gp#1)) withcolor #3;
+draw (((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2) withcolor #3;
+draw (((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(-1mm,0) rotated angle(gp#2-gp#1)) withcolor #3;
+else:hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(1mm,0) rotated angle(gp#2-gp#1));
+for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path(hwp.dum);draw tmpp withcolor #3;endfor;
+hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2);
+for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path(hwp.dum);draw tmpp withcolor #3;endfor;
+hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(-1mm,0) rotated angle(gp#2-gp#1));
+for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path(hwp.dum);draw tmpp withcolor #3;endfor;fi;}
+\def\mpGlineMarkkk #1#2{\mpGlineMarkkkC #1#2[black]}
+\def\mpGlineMarko #1#2{if not hwmode:draw fullcircle scaled 2mm shifted ((gp#1+gp#2)/2);
+ else:hwp.dum:=fullcircle scaled 2mm shifted ((gp#1+gp#2)/2);for hwrpt=1 upto hwtm:draw hand_writing_path_half(hwp.dum);endfor;fi;}
+ \def\mpGlineMarkt #1#2{if not hwmode:draw ((0,0.7) rotated 120--(0,0.7) rotated -120--(0,0.7)--cycle) scaled 2mm shifted ((gp#1+gp#2)/2);
+ else:hwp.dum:=((0,0.7) rotated 120--(0,0.7) rotated -120--(0,0.7)--cycle) scaled 2mm shifted ((gp#1+gp#2)/2);
+ for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;fi;}
+ \def\mpGlineMarkx #1#2{if not hwmode:
+ draw ((0.5,0.5)--(-0.5,-0.5)) scaled 2mm shifted ((gp#1+gp#2)/2);
+ draw ((-0.5,0.5)--(0.5,-0.5)) scaled 2mm shifted ((gp#1+gp#2)/2);
+ else:
+ hwp.dum:=((0.5,0.5)--(-0.5,-0.5)) scaled 2mm shifted ((gp#1+gp#2)/2);for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;
+ hwp.dum:=((-0.5,0.5)--(0.5,-0.5)) scaled 2mm shifted ((gp#1+gp#2)/2);for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;
+ fi;}
+\def\mpGlineMarks#1#2#3.{\mpGlineMark#1#2\ifx#3\empty\else\mpGlineMarks#3.\fi}
+\def\mpGlineMarkCs#1#2#3[#4]{\mpGlineMarkC#1#2[#4]\ifx#3\empty\else\mpGlineMarkCs#3[#4]\fi}
+\def\mpGlineMarkks#1#2#3.{\mpGlineMarkk#1#2\ifx#3\empty\else\mpGlineMarkks#3.\fi}
+\def\mpGlineMarkkCs#1#2#3[#4]{\mpGlineMarkkC#1#2[#4]\ifx#3\empty\else\mpGlineMarkkCs#3[#4]\fi}
+\def\mpGlineMarkkCXs#1#2#3[#4](#5){\mpGlineMarkkCX#1#2[#4](#5)\ifx#3\empty\else\mpGlineMarkkCXs#3[#4](#5)\fi}
+\def\mpGlineMarkkks#1#2#3.{\mpGlineMarkkk#1#2\ifx#3\empty\else\mpGlineMarkkks#3.\fi}
+ \def\mpGlineMarkos#1#2#3.{\mpGlineMarko#1#2\ifx#3\empty\else\mpGlineMarkos#3.\fi}
+ \def\mpGlineMarkts#1#2#3.{\mpGlineMarkt#1#2\ifx#3\empty\else\mpGlineMarkts#3.\fi}
+ \def\mpGlineMarkxs#1#2#3.{\mpGlineMarkx#1#2\ifx#3\empty\else\mpGlineMarkxs#3.\fi}
+% Draw Arc Mark
+ \def\mpGarcMark #1#2#3{%
+hwp.dum:=(((0,-1mm)--(0,1mm)) rotated (angle((gp#2+gp#3)/2-gp#1)+90)) shifted (gp#1+length(gp#2-gp#1)*unitvector((gp#2+gp#3)/2-gp#1));
+if not hwmode:draw hwp.dum;
+else:
+for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;fi;}
+% Draw Angle Mark
+\def\mpGangleFillC #1#2#3(#4)[#5]{% #1-#2#3 #4:size #5:co;or
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma>90:duma:=180-duma;fi;
+dumv:=(#4*(3mm))*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump;p.dump=gp#1--gp#1+(dumv rotated duma)..gp#1+dumv..gp#1+(dumv rotated -duma);
+fill p.dump--cycle withcolor #5;if hwmode:for hwrpt=1 upto hwtm:draw hand_writing_path(p.dump) withcolor #5;endfor;fi;
+}%
+\def\mpGangleMark #1#2#3{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma>90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=(3mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump;p.dump=gp#1+(dumv rotated duma)..gp#1+dumv..gp#1+(dumv rotated -duma);
+if not hwmode:draw p.dump;else:for hwrpt=1 upto hwtm:draw hand_writing_path(p.dump);endfor;fi;
+}%
+\def\mpGangleMarkX #1#2#3[#4]{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma>90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=#4*(3mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump;p.dump=gp#1+(dumv rotated duma)..gp#1+dumv..gp#1+(dumv rotated -duma);
+if not hwmode:draw p.dump;else:for hwrpt=1 upto hwtm:draw hand_writing_path(p.dump);endfor;fi;
+}%
+\def\mpGangleMarkXC #1#2#3[#4][#5]{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma>90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=#4*(3mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump;p.dump=gp#1+(dumv rotated duma)..gp#1+dumv..gp#1+(dumv rotated -duma);
+if not hwmode:draw p.dump withcolor #5;
+else:for hwrpt=1 upto hwtm:path tmppth;
+tmppth=hand_writing_path(p.dump);draw tmppth withcolor #5;
+endfor;fi;
+}%
+\def\mpGangleMarkXCF #1#2#3[#4][#5][#6]{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma>90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=#4*(3mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump;p.dump=gp#1+(dumv rotated duma)..gp#1+dumv..gp#1+(dumv rotated -duma);
+fill gp#1--p.dump--cycle withcolor #6;
+if not hwmode:draw p.dump withcolor #5;
+else:for hwrpt=1 upto hwtm:path tmppth;
+tmppth=hand_writing_path(p.dump);draw tmppth withcolor #5;
+endfor;fi;
+}%
+\def\mpGangleMarkXCR #1#2#3[#4][#5]{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma<90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=-#4*(3mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump;p.dump=gp#1+(dumv rotated duma)..gp#1+dumv..gp#1+(dumv rotated -duma);
+if not hwmode:draw p.dump withcolor #5;
+else:for hwrpt=1 upto hwtm:path tmppth;
+tmppth=hand_writing_path(p.dump);draw tmppth withcolor #5;
+endfor;fi;
+}%
+\def\mpGangleMarkXCRF #1#2#3[#4][#5][#6]{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma<90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=-#4*(3mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump;p.dump=gp#1+(dumv rotated duma)..gp#1+dumv..gp#1+(dumv rotated -duma);
+fill gp#1--p.dump--cycle withcolor #6;
+if not hwmode:draw p.dump withcolor #5;
+else:for hwrpt=1 upto hwtm:path tmppth;
+tmppth=hand_writing_path(p.dump);draw tmppth withcolor #5;
+endfor;fi;
+}%
+\def\mpGangleMarkk #1#2#3{%
+pair dumvp,dumvm;dumvp=(0,0);dumvm=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma>90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumvp:=(3.25mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumvm:=(2.75mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump,p.dumm;
+p.dump=gp#1+(dumvp rotated duma)..gp#1+dumvp..gp#1+(dumvp rotated -duma);
+p.dumm=gp#1+(dumvm rotated duma)..gp#1+dumvm..gp#1+(dumvm rotated -duma);
+if not hwmode:draw p.dump;draw p.dumm;
+else:for hwrpt=1 upto hwtm:draw hand_writing_path(p.dump);draw hand_writing_path(p.dumm);endfor;fi;
+}%
+\def\mpGangleMarkkX #1#2#3[#4]{%
+pair dumvp,dumvm;dumvp=(0,0);dumvm=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma>90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumvp:=(#4*3mm+.25mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumvm:=(#4*3mm-.25mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump,p.dumm;
+p.dump=gp#1+(dumvp rotated duma)..gp#1+dumvp..gp#1+(dumvp rotated -duma);
+p.dumm=gp#1+(dumvm rotated duma)..gp#1+dumvm..gp#1+(dumvm rotated -duma);
+if not hwmode:draw p.dump;draw p.dumm;
+else:for hwrpt=1 upto hwtm:draw hand_writing_path(p.dump);draw hand_writing_path(p.dumm);endfor;fi;
+}%
+\def\mpGangleMarkkXC #1#2#3[#4][#5]{%
+pair dumvp,dumvm;dumvp=(0,0);dumvm=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma>90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumvp:=(#4*3mm+.35mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumvm:=(#4*3mm-.35mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump,p.dumm;
+p.dump=gp#1+(dumvp rotated duma)..gp#1+dumvp..gp#1+(dumvp rotated -duma);
+p.dumm=gp#1+(dumvm rotated duma)..gp#1+dumvm..gp#1+(dumvm rotated -duma);
+if not hwmode:draw p.dump withcolor #5;draw p.dumm withcolor #5;
+else:for hwrpt=1 upto hwtm:path tmpptha,tmppthb;
+tmpptha=hand_writing_path(p.dump);tmppthb=hand_writing_path(p.dumm);
+draw tmpptha withcolor #5;draw tmppthb withcolor #5;
+endfor;fi;
+}%
+\def\mpGangleMarkkkX #1#2#3[#4]{%
+pair dumvp,dumvm,dumvn;dumvp=(0,0);dumvm=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma>90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumvn:=(#4*3mm+.4mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumvp:=(#4*3mm+.0mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumvm:=(#4*3mm-.4mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump,p.dumm,p.dumn;
+p.dumn=gp#1+(dumvn rotated duma)..gp#1+dumvn..gp#1+(dumvn rotated -duma);
+p.dump=gp#1+(dumvp rotated duma)..gp#1+dumvp..gp#1+(dumvp rotated -duma);
+p.dumm=gp#1+(dumvm rotated duma)..gp#1+dumvm..gp#1+(dumvm rotated -duma);
+if not hwmode:draw p.dump;draw p.dumm;draw p.dumn;
+else:for hwrpt=1 upto hwtm:draw hand_writing_path(p.dumn);draw hand_writing_path(p.dump);draw hand_writing_path(p.dumm);endfor;fi;
+}%
+\def\mpGangleMarko #1#2#3{
+pair dumv;dumv:=2.4mm*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+if not hwmode:draw (fullcircle scaled 4pt) shifted (gp#1+dumv);
+ else:for hwrpt=1 upto hwtm:draw hand_writing_path_half((fullcircle scaled 4pt) shifted (gp#1+dumv));endfor;fi;
+}%
+\def\mpGangleMarkoC #1#2#3[#4]{
+pair dumv;dumv:=2.4mm*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+if not hwmode:draw (fullcircle scaled 4pt) shifted (gp#1+dumv) withcolor #4;
+else:for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path_half((fullcircle scaled 4pt) shifted (gp#1+dumv));draw tmpp withcolor #4;endfor;fi;
+}%
+\def\mpGangleMarkoX #1#2#3[#4]{
+pair dumv;dumv:=#4*2.4mm*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+if not hwmode:draw (fullcircle scaled 4pt) shifted (gp#1+dumv);
+else:for hwrpt=1 upto hwtm:draw hand_writing_path_half((fullcircle scaled 4pt) shifted (gp#1+dumv));endfor;fi;
+}%
+\def\mpGangleMarkoXC #1#2#3[#4][#5]{
+pair dumv;dumv:=#4*2.4mm*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+if not hwmode:draw (fullcircle scaled 4pt) shifted (gp#1+dumv) withcolor #5;
+else:for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path_half((fullcircle scaled 4pt) shifted (gp#1+dumv));draw tmpp withcolor #5;endfor;fi;
+}%
+\def\mpGangleMarkb #1#2#3{
+pair dumv;dumv:=2.4mm*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+if not hwmode:filldraw (fullcircle scaled 4pt) shifted (gp#1+dumv);
+ else:filldraw hand_writing_path_half((fullcircle scaled 4pt) shifted (gp#1+dumv));fi;
+}%
+\def\mpGangleMarkbX #1#2#3[#4]{
+pair dumv;dumv:=#4*2.4mm*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+if not hwmode:filldraw (fullcircle scaled 4pt) shifted (gp#1+dumv);
+ else:filldraw hand_writing_path_half((fullcircle scaled 4pt) shifted (gp#1+dumv));fi;
+}%
+\def\mpGangleMarkbXC #1#2#3[#4][#5]{
+pair dumv;dumv:=#4*2.4mm*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+if not hwmode:filldraw (fullcircle scaled 4pt) shifted (gp#1+dumv) withcolor #5;
+else:for hwrpt=1 upto hwtm:path tmpp;tmpp=hand_writing_path_half((fullcircle scaled 4pt) shifted (gp#1+dumv));filldraw tmpp withcolor #5;endfor;fi;
+}%
+\def\mpGangleMarkbS #1#2#3[#4]{
+pair dumv;dumv:=#4*3mm*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+fill (fullcircle scaled 4pt) shifted (gp#1+dumv);
+}%
+%
+\def\mpGangleMarkFXC #1#2#3[#4][#5]{%
+pair dumv;dumv=(0,0);numeric duma;duma=0;
+duma:=abs(angle(gp#2-gp#1)-angle(gp#3-gp#1))/2;
+if duma>90:duma:=180-duma;fi;
+%dumv:=(3mm/cosd(duma))*(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+dumv:=#4*(3mm)*unitvector(unitvector(gp#2-gp#1)+unitvector(gp#3-gp#1));
+path p.dump;p.dump=gp#1--gp#1+(dumv rotated duma)..gp#1+dumv..gp#1+(dumv rotated -duma)--cycle;
+fill p.dump withcolor #5;
+}%
+%
+\def\mpGangleMarks#1#2#3#4.{\mpGangleMark#1#2#3\ifx#4\empty\else\mpGangleMarks#4.\fi}
+\def\mpGangleMarkXs#1#2#3#4[#5]{\mpGangleMarkX#1#2#3[#5]\ifx#4\empty\else\mpGangleMarkXs#4[#5]\fi}
+\def\mpGangleMarkkXs#1#2#3#4[#5]{\mpGangleMarkkX#1#2#3[#5]\ifx#4\empty\else\mpGangleMarkkXs#4[#5]\fi}
+\def\mpGangleMarkoXs#1#2#3#4[#5]{\mpGangleMarkoX#1#2#3[#5]\ifx#4\empty\else\mpGangleMarkoXs#4[#5]\fi}
+\def\mpGangleMarkbXs#1#2#3#4[#5]{\mpGangleMarkbX#1#2#3[#5]\ifx#4\empty\else\mpGangleMarkbXs#4[#5]\fi}
+%
+\def\mpGangleMarkFXCs#1#2#3#4[#5][#6]{\mpGangleMarkFXC#1#2#3[#5][#6]\ifx#4\empty\else\mpGangleMarkFXCs#4[#5][#6]\fi}
+\def\mpGangleMarkXCs#1#2#3#4[#5][#6]{\mpGangleMarkXC#1#2#3[#5][#6]\ifx#4\empty\else\mpGangleMarkXCs#4[#5][#6]\fi}
+\def\mpGangleMarkkXCs#1#2#3#4[#5][#6]{\mpGangleMarkkXC#1#2#3[#5][#6]\ifx#4\empty\else\mpGangleMarkkXCs#4[#5][#6]\fi}
+\def\mpGangleMarkoXCs#1#2#3#4[#5][#6]{\mpGangleMarkoXC#1#2#3[#5][#6]\ifx#4\empty\else\mpGangleMarkoXCs#4[#5][#6]\fi}
+\def\mpGangleMarkbXCs#1#2#3#4[#5][#6]{\mpGangleMarkbXC#1#2#3[#5][#6]\ifx#4\empty\else\mpGangleMarkbXCs#4[#5][#6]\fi}
+%
+%---------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------
+%
+% function's graph...
+%
+% --- Graph Paper Grids & Arrow --------------------------------------------------------------------------------
+\def\mpGraphGridLinesDraw(#1,#2)(#3,#4)[#5,#6,#7][#8](#9){% #1-#3:data1's min-max #2-#4:data2's #5:Grids width 
+%                                           #6:Gray Level #7:Grids PLusAlpha #8 Arrows PlusAlpha #9 unit-value
+numeric lx,rx,dy,uy;lx=floor(#1/#9)-#8;rx=ceiling(#3/#9)+#8;dy=floor(#2/#9)-#8;uy=ceiling(#4/#9)+#8;
+\mpPenSize(#5)\mpHandWriteOff
+for x=1*ceiling(lx/1) step 1 until rx:draw ((x,dy-#7)--(x,uy+#7)) scaled w withcolor (#6+0.1)*white;endfor;
+for y=1*ceiling(dy/1) step 1 until uy:draw ((lx-#7,y)--(rx+#7,y)) scaled w withcolor (#6+0.1)*white;endfor;
+\mpPenSize(2*#5)\mpHandWriteOff
+for x=5*ceiling(lx/5) step 5 until rx:draw ((x,dy-#7)--(x,uy+#7)) scaled w withcolor #6*white;endfor;
+for y=5*ceiling(dy/5) step 5 until uy:draw ((lx-#7,y)--(rx+#7,y)) scaled w withcolor #6*white;endfor;
+\mpPenSize(4*#5)\mpHandWriteOff
+for x=10*ceiling(lx/10) step 10 until rx:draw ((x,dy-#7)--(x,uy+#7)) scaled w withcolor (#6-0.1)*white;endfor;
+for y=10*ceiling(dy/10) step 10 until uy:draw ((lx-#7,y)--(rx+#7,y)) scaled w withcolor (#6-0.1)*white;endfor;
+\mpHandWriteOn\mpPenSize(4*#5)
+\mpParrowCX(lx-2*#7,0)(rx+3*#7,0)[0.6white][2]\mpParrowCX(0,dy-2*#7)(0,uy+3*#7)[#6white][2]
+}
+\def\mpGraphGridDotsLinesDraw(#1,#2)(#3,#4)[#5,#6,#7][#8](#9){% #1-#3:data1's min-max #2-#4:data2's #5:Grids width 
+%                                                       #6:Gray Level #7:Grids PLusAlpha #8 Arrows PlusAlpha 
+numeric lx,rx,dy,uy;lx=floor(#1/#9)-#8;rx=ceiling(#3/#9)+#8;dy=floor(#2/#9)-#8;uy=ceiling(#4/#9)+#8;
+\mpPenSize(#5)\mpHandWriteOff
+for x=1*ceiling(lx/1) step 1 until rx:for y=1*ceiling(dy/1) step 1 until uy:
+\mpPpointC(x,y)[(#6+0.1)*white];endfor;endfor;
+\mpPenSize(2*#5)\mpHandWriteOff
+for x=5*ceiling(lx/5) step 5 until rx:draw ((x,dy-#7)--(x,uy+#7)) scaled w withcolor #6*white;endfor;
+for y=5*ceiling(dy/5) step 5 until uy:draw ((lx-#7,y)--(rx+#7,y)) scaled w withcolor #6*white;endfor;
+\mpPenSize(4*#5)\mpHandWriteOff
+for x=10*ceiling(lx/10) step 10 until rx:draw ((x,dy-#7)--(x,uy+#7)) scaled w withcolor (#6-0.1)*white;endfor;
+for y=10*ceiling(dy/10) step 10 until uy:draw ((lx-#7,y)--(rx+#7,y)) scaled w withcolor (#6-0.1)*white;endfor;
+\mpHandWriteOn\mpPenSize(4*#5)
+\mpParrowCX(lx-2*#7,0)(rx+3*#7,0)[0.6white][2]\mpParrowCX(0,dy-2*#7)(0,uy+3*#7)[#6white][2]
+}
+\def\mpGraphGridDotsDraw(#1,#2)(#3,#4)[#5,#6,#7][#8](#9){% #1-#3:data1's min-max #2-#4:data2's #5:Grids width 
+%                                                       #6:Gray Level #7:Grids PLusAlpha #8 Arrows PlusAlpha 
+numeric lx,rx,dy,uy;lx=floor(#1/#9)-#8;rx=ceiling(#3/#9)+#8;dy=floor(#2/#9)-#8;uy=ceiling(#4/#9)+#8;
+\mpHandWriteOff
+for x=1*ceiling(lx/1) step 1 until rx:for y=1*ceiling(dy/1) step 1 until uy:numeric pntcol;
+if ((x mod 10==0) or (y mod 10==0)):\mpPenSize(4*#5) pntcol=#6-0.1;
+elseif ((x mod 5==0) or (y mod 5==0)):\mpPenSize(2*#5) pntcol=#6;
+else:\mpPenSize(#5) pntcol=#6+0.1;fi;
+\mpPpointC(x,y)[pntcol*white];
+endfor;endfor;
+\mpHandWriteOn\mpPenSize(4*#5)
+\mpParrowCX(lx-2*#7,0)(rx+3*#7,0)[0.6white][2]\mpParrowCX(0,dy-2*#7)(0,uy+3*#7)[#6white][2]
+}
+% Graph Labels ----------------------------------------------------------------------------------------------
+\def\mpGraphXYLabels(#1,#2)(#3,#4)[#5](#6,#7){
+label(textext("$O$"),(-#7,#6) scaled w);
+for x=#1 step #5 until #3:if x<>0:
+fill (fullcircle shifted (x,#6)) scaled w withcolor transparent(1,0.5,white);
+label(textext("$" & decimal x & "$"),(x,#6) scaled w);fi;
+endfor;
+for y=#2 step #5 until #4:if y<>0:
+fill (fullcircle shifted (#7,y)) scaled w withcolor transparent(1,0.5,white);
+label(textext("$" & decimal y & "$"),(#7,y) scaled w);fi;
+endfor;
+}
+\def\mpGraphXYLabelXs(#1,#2)(#3,#4)[#5](#6,#7)[#8]{
+label(textext("$O$"),(-#7,#6) scaled w);
+for x=#1 step #5 until #3:if x<>0:
+fill (fullcircle shifted (floor(x*#8),#6)) scaled w withcolor transparent(1,0.5,white);
+label(textext("$" & decimal x & "$"),(floor(x*#8),#6) scaled w);fi;
+endfor;
+for y=#2 step #5 until #4:if y<>0:
+fill (fullcircle shifted (#7,floor(y*#8))) scaled w withcolor transparent(1,0.5,white);
+label(textext("$" & decimal y & "$"),(#7,floor(y*#8)) scaled w);fi;
+endfor;
+}
+
+% ------------------------------------------------------------------------------------------------------------
+%   MetaPost's Macro to make path of function's graph
+ \def\mpFuncMacroSet{%
+ def compute_curve(suffix f)(expr xmin, xmax, xinc) =
+ ( (xmin,f(xmin)) for x=xmin+xinc step xinc until xmax:..(x,f(x)) endfor) enddef;
+ }%
+ %   \mpFunctDef[f,x**2+2x+3] s.t. f(x)=x^2+2x+3
+ \def\mpFunctDef[#1,#2]{vardef #1(expr x) = #2 enddef;}% \mpFunctDef[f,x**x]でf(x)=x^2
+ %   \mpFunctPath(f)(-2,4)[1/10] making path p.#1 of function #1(x)'s graph of x in (#2,#3) step #4
+ \def\mpFunctPath(#1)(#2,#3)[#4]{path p.#1;p.#1=compute_curve(#1,#2,#3,#4);}
+\def\mpFunctPathDraw(#1)(#2,#3)[#4]{path p.#1;p.#1=compute_curve(#1,#2,#3,#4) scaled w;%
+if not hwmode:draw p.#1 scaled w;else:for hwrpt=1 upto hwtm:draw hand_writing_path_half(p.#1);endfor;fi;
+}%
+ \def\mpFunctPathDrawd(#1)(#2,#3)[#4]{path p.#1;p.#1=compute_curve(#1,#2,#3,#4);draw p.#1 scaled w dashed withdots scaled 0.5pt;}
+ \def\mpFunctPathDrawC(#1)(#2,#3)[#4][#5]{path p.#1;p.#1=compute_curve(#1,#2,#3,#4);draw p.#1 scaled w withcolor #5;}
+ \def\mpFunctPathDrawCd(#1)(#2,#3)[#4][#5]{path p.#1;p.#1=compute_curve(#1,#2,#3,#4);draw p.#1 scaled w dashed withdots scaled 0.5pt withcolor #5;}
+ \def\mpFunctPoint(#1)(#2){filldraw fullcircle scaled 1mm shifted ((#2,#1(#2)) scaled w);}
+ \def\mpFunctPointb(#1)(#2){filldraw fullcircle scaled 2mm shifted ((#2,#1(#2)) scaled w);}
+ \def\mpFunctPointB(#1)(#2){filldraw fullcircle scaled 3mm shifted ((#2,#1(#2)) scaled w);}
+ \def\mpFunctPointo(#1)(#2){filldraw fullcircle scaled 2mm shifted ((#2,#1(#2)) scaled w) withcolor white;draw fullcircle scaled 2mm shifted ((#2,#1(#2)) scaled w);}
+ \def\mpFunctPointO(#1)(#2){filldraw fullcircle scaled 3mm shifted ((#2,#1(#2)) scaled w) withcolor white;draw fullcircle scaled 2mm shifted ((#2,#1(#2)) scaled w);}
+ \def\mpFunctPointC(#1)(#2)[#3]{filldraw fullcircle scaled 1mm shifted ((#2,#1(#2)) scaled w) withcolor #3;}
+ \def\mpFunctPointCb(#1)(#2)[#3]{filldraw fullcircle scaled 2mm shifted ((#2,#1(#2)) scaled w) withcolor #3;}
+ \def\mpFunctPointCB(#1)(#2)[#3]{filldraw fullcircle scaled 3mm shifted ((#2,#1(#2)) scaled w) withcolor #3;}
+ \def\mpFunctPointCo(#1)(#2)[#3]{filldraw fullcircle scaled 2mm shifted ((#2,#1(#2)) scaled w) withcolor white;draw fullcircle scaled 2mm shifted ((#2,#1(#2)) scaled w) withcolor #3;}
+ \def\mpFunctPointCO(#1)(#2)[#3]{filldraw fullcircle scaled 3mm shifted ((#2,#1(#2)) scaled w) withcolor white;draw fullcircle scaled 2mm shifted ((#2,#1(#2)) scaled w) withcolor #3;}
+
+ \def\mpFunctPathDrawXYscale(#1)(#2,#3)[#4][#5,#6]{path p.#1;p.#1=compute_curve(#1,#2,#3,#4);draw p.#1 xscaled #5 yscaled #6 scaled w;}
+ %   Mesh sheet Macro
+ \def\mpMeshSet(#1,#2)(#3,#4)[#5,#6]{% \mpMeshSet(-3,-4)(7,8) left-bottom(-3,-3)right-upper(7,8) color#5 thickness#6
+ \mpPenSize(#6)
+ for x=#1 upto #3:draw ((x,#2-1)--(x,#4+1)) scaled w withcolor #5;endfor;
+ for y=#2 upto #4:draw ((#1-1,y)--(#3+1,y)) scaled w withcolor #5;endfor;
+ }% 
+\def\mpMeshSetX(#1,#2)(#3,#4)[#5,#6][#7]{% \mpMeshSet(-3,-4)(7,8) left-bottom(-3,-3)right-upper(7,8) color#5 thickness#6
+\mpPenSize(#6)
+for x=#1 step (#7) until #3:draw ((x,#2-1)--(x,#4+1)) scaled w withcolor #5;endfor;
+for y=#2 Step (#7) until #4:draw ((#1-1,y)--(#3+1,y)) scaled w withcolor #5;endfor;
+}% 
+ \def\mpGraphSet(#1,#2)(#3,#4)[#5]{% \mpGraphSet(-3,-4)(7,8) left-bottom(-3,-3)right-upper(7,8)
+ \mpMeshSet(#1,#2)(#3,#4)[#5,0.02]
+ \mpPenSize(0.06)% 座標軸入れる
+ drawarrow ((#1,0)--(#3.4,0)) scaled w withcolor 0.5white;
+ drawarrow ((0,#2)--(0,#4.4)) scaled w withcolor 0.5white;
+ \mpFuncMacroSet
+ }%
+ %
+ %---------------------------------------------------------------------------------------------------------------
+ %
+ % handwriting Macros
+ %   MetaPost's Macro to make hand-writing like path from path defined
+ %
+ %
+ \def\mpHandWriteSet{%
+ boolean hwmode;hwmode=false;
+ numeric hwpd,hwstp,hwagl,hwtm;hwpd=2;hwstp=1/8;hwagl=10;hwtm=5;
+ path hwp.dum;hwp.dum=(0,0)--(1,0);
+ def hand_writing_path(expr pth) =% translate pth:path to hand_writing_path 
+   point 0 of pth+(uniformdeviate(100)/100*1/hwpd,0) rotated uniformdeviate(360)
+   for i=1 upto floor(length(pth)/(hwstp)):
+   ..(point (i*length(pth)/floor(length(pth)/(hwstp))) of pth+(uniformdeviate(100)/100*1/hwpd,0) rotated uniformdeviate(360))
+   {dir (angle(direction (i*length(pth)/floor(length(pth)/(hwstp))) of pth) + uniformdeviate(100)/100*hwagl-hwagl/2)}
+   endfor if cycle pth:--cycle;fi;
+ enddef;
+ def hand_writing_path_half(expr pth) =
+   point 0 of pth+(uniformdeviate(100)/100*1/hwpd,0) rotated uniformdeviate(360)
+   for i=1 upto floor(length(pth)/(hwstp)/2):
+   ..(point (i*length(pth)/floor(length(pth)/(hwstp)/2)) of pth+(uniformdeviate(100)/200*1/hwpd,0) rotated uniformdeviate(360))
+   {dir (angle(direction (i*length(pth)/floor(length(pth)/(hwstp)/2)) of pth) + uniformdeviate(100)/200*hwagl-hwagl/2)}
+   endfor if cycle pth:--cycle;fi;
+ enddef;
+ }% 
+% default setting : numeric hwpd,hwstp,hwagl,hwtm;hwpd=2;hwstp=1/8;hwagl=10;hwtm=5;
+%   \mpHandWriteSetting(2,1/8,10)[#4]
+\def\mpHandWriteSetting(#1,#2,#3)[#4]{hwpd:=#1;hwstp:=#2;hwagl:=#3;hwtm:=#4;}
+ %\def\mpGHWpoint #1{draw ( gp#1 for j=1 upto 60:..gp#1+((j+uniformdeviate(20)-20,0) scaled 0.3mm rotated (30*j))/20 endfor);}
+ %\def\mpGHWpoints #1#2.{\mpGHWpoint #1\ifx#2\empty\else\mpGHWpoints#2.\fi}
+ %
+ %\def\mpGHWline #1#2{for hwrpt=1 upto hwtm:draw hand_writing_path(gp#1--gp#2);endfor;}
+ %%\def\mpGHWlineC #1#2[#3]{drawoptions(withcolor #3);for hwrpt=1 upto hwtm:draw hand_writing_path(gp#1--gp#2);endfor;drawoptions(withcolor black);}
+ %\def\mpGHWlines#1#2#3.{\mpGHWline#1#2\ifx#3\empty\else\mpGHWlines#2#3.\fi}
+ %\def\mpGHWlineCs#1#2#3[#4]{\mpGHWlineC#1#2[#4]\ifx#3\empty\else\mpGHWlineCs#2#3[#4]\fi}
+ %  linemarks
+ %\def\mpGHWlineMark #1#2{hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2);
+ %for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;}
+ %\def\mpGHWlineMarkk #1#2{
+ %hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(0.5mm,0) rotated angle(gp#2-gp#1));
+ %for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;
+ %hwp.dum:=(((0,-1mm)--(0,1mm)) rotated angle(gp#2-gp#1)) shifted ((gp#1+gp#2)/2+(-0.5mm,0) rotated angle(gp#2-gp#1));
+ %for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;}
+ %\def\mpGHWlineMarko #1#2{hwp.dum:=fullcircle scaled 2mm shifted ((gp#1+gp#2)/2);
+ %for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;}
+ %\def\mpGHWlineMarkt #1#2{hwp.dum:=((0,0.7) rotated 120--(0,0.7) rotated -120--(0,0.7)--cycle) scaled 2mm shifted ((gp#1+gp#2)/2);
+ %for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;}
+ %\def\mpGHWlineMarkx #1#2{%
+ %hwp.dum:=((0.5,0.5)--(-0.5,-0.5)) scaled 2mm shifted ((gp#1+gp#2)/2);for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;
+ %hwp.dum:=((-0.5,0.5)--(0.5,-0.5)) scaled 2mm shifted ((gp#1+gp#2)/2);for hwrpt=1 upto hwtm:draw hand_writing_path(hwp.dum);endfor;}
+ \def\mpGHWlineMarks#1#2#3.{\mpGHWlineMark#1#2\ifx#3\empty\else\mpGHWlineMarks#3.\fi}
+ \def\mpGHWlineMarkks#1#2#3.{\mpGHWlineMarkk#1#2\ifx#3\empty\else\mpGHWlineMarkks#3.\fi}
+ \def\mpGHWlineMarkos#1#2#3.{\mpGHWlineMarko#1#2\ifx#3\empty\else\mpGHWlineMarkos#3.\fi}
+ \def\mpGHWlineMarkts#1#2#3.{\mpGHWlineMarkt#1#2\ifx#3\empty\else\mpGHWlineMarkts#3.\fi}
+ \def\mpGHWlineMarkxs#1#2#3.{\mpGHWlineMarkx#1#2\ifx#3\empty\else\mpGHWlineMarkxs#3.\fi}
+ %
+ \def\mpHandWriteFunctPath(#1){%
+ path hwp.#1;hwp.#1=hand_writing_path(p.#1);draw hwp.#1 scaled w;}
+ \def\mpHandDrawFunctPoints(#1)(#2,#3)[#4,#5]{% 
+ for i=#2 step #4 until #3:
+ draw ( (i,#1(i)) for j=1 upto 40
+ :..( i+(j+uniformdeviate(20)-20)/300*cosd(30*j)*#5 , #1(i)+(j+uniformdeviate(20)-20)/300*sind(30*j)*#5 ) endfor) scaled w;
+ endfor;
+ }%
+ %---------------------------------------------------------------------------------------------------------------
+%===================================================================
+% \mpT 3D View
+%===================================================================
+% Definition of Points of 3Dimension and Trans for 2D Plane
+% View and Target Points
+\def\mpSetTView(#1,#2,#3)(#4,#5,#6){%\sendMP{%
+numeric xView,yView,zView,xTarget,yTarget,zTarget;xView=-1*#1;yView=-1*#3;zView=-1*#2;xTarget=#4;yTarget=#5;zTarget=#6;%
+numeric xr,yr,zr,TVd,TVdxy;xr=xTarget-xView;yr=yTarget-yView;zr=zTarget-zView;
+TVd=sqrt(xr**2+yr**2+zr**2);TVdxy=sqrt(xr**2+yr**2);
+if TVd=0:xView:=xTarget-1;yView:=yTarget-1;zView:=zTarget-1;xr:=1;yr:=1;zr:=1;TVd:=sqrt(3);TVdxy:=sqrt(2);
+elseif TVdxy=0:xView:=xTarget-1;yView:=yTarget-1;xr:=0.1;yr:=0.1;TVdxy:=sqrt(2);fi;%
+numeric TVcosA,TVsinA,TVcosT,TVsinT;TVcosA=xr/TVdxy;TVsinA=yr/TVdxy;TVcosT=TVdxy/TVd;TVsinT=zr/TVd;
+}%}%
+\def\mpSetTViewRT(#1,#2,#3)(#4,#5,#6){%\sendMP{%
+numeric xView,yView,zView,xTarget,yTarget,zTarget;
+%xView=-1*#1;yView=-1*#3;zView=-1*#2;xTarget=#4;yTarget=#5;zTarget=#6;%
+xView=#1*cosd(#3)*cosd(#2);yView=#1*sind(#3);zView=#1*cosd(#3)*sind(#2);
+xTarget=#4;yTarget=#5;zTarget=#6;%
+numeric xr,yr,zr,TVd,TVdxy;xr=xTarget-xView;yr=yTarget-yView;zr=zTarget-zView;
+TVd=sqrt(xr**2+yr**2+zr**2);TVdxy=sqrt(xr**2+yr**2);
+if TVd=0:xView:=xTarget-1;yView:=yTarget-1;zView:=zTarget-1;xr:=1;yr:=1;zr:=1;TVd:=sqrt(3);TVdxy:=sqrt(2);
+elseif TVdxy=0:xView:=xTarget-1;yView:=yTarget-1;xr:=0.1;yr:=0.1;TVdxy:=sqrt(2);fi;%
+numeric TVcosA,TVsinA,TVcosT,TVsinT;TVcosA=xr/TVdxy;TVsinA=yr/TVdxy;TVcosT=TVdxy/TVd;TVsinT=zr/TVd;
+}%}%
+\def\qbSetTViewRTs(#1,#2,#3)(#4,#5,#6){%\sendMP{%
+numeric xView,yView,zView,xTarget,yTarget,zTarget;
+%xView=-1*#1;yView=-1*#3;zView=-1*#2;xTarget=#4;yTarget=#5;zTarget=#6;%
+xView=#1*cosd(#3)*cosd(#2);yView=#1*cosd(#3)*sind(#2);zView=#1*sind(#3);xTarget=#4;yTarget=#5;zTarget=#6;%
+numeric xr,yr,zr,TVd,TVdxy;xr=xTarget-xView;yr=yTarget-yView;zr=zTarget-zView;
+TVd=sqrt(xr**2+yr**2+zr**2);TVdxy=sqrt(xr**2+yr**2);
+if TVd=0:xView:=xTarget-1;yView:=yTarget-1;zView:=zTarget-1;xr:=1;yr:=1;zr:=1;TVd:=sqrt(3);TVdxy:=sqrt(2);
+elseif TVdxy=0:xView:=xTarget-1;yView:=yTarget-1;xr:=0.1;yr:=0.1;TVdxy:=sqrt(2);fi;%
+numeric TVcosA,TVsinA,TVcosT,TVsinT;TVcosA=xr/TVdxy;TVsinA=yr/TVdxy;TVcosT=TVdxy/TVd;TVsinT=zr/TVd;
+}%}%
+% 3次元の点の定義
+\def\mpTPointDef#1(#2,#3,#4){%\sendMP{
+numeric c.#1[];c.#1[0]=#2;c.#1[1]=#3;c.#1[2]=#4;}%}%
+%\def\qbPointsDef#1(#2,#3)#4.{\qbPointDef#1(#2,#3)\ifx#4\@empty\else\qbPointsDef#4.\fi}%
+%\def\qbTPointsDef#1(#2,#3,#4)#5.{\qbTPointDef#1(#2,#3,#4)\ifx#5\@empty\else\qbTPointsDef#5.\fi}%
+\def\mpTPointsDef#1(#2,#3,#4)#5.{\mpTPointDef#1(#2,#3,#4)\ifx#5\@empty\else\mpTPointsDef#5.\fi}%
+% 3次元の点の中点の定義
+\def\mpTmidPoint#1#2 #3{%\sendMP{
+numeric c.#3[];%
+c.#3[0]=(c.#1[0]+c.#2[0])/2;c.#3[1]=(c.#1[1]+c.#2[1])/2;c.#3[2]=(c.#1[2]+c.#2[2])/2;}%}%
+% 3次元の点を視点から注視点を観たときの平面への射影点への変換
+\def\mpTTrans#1{%\sendMP{%
+numeric cc.#1[][];
+% 操作\UTF{2460}　原点を注視点に平行移動
+cc.#1[0][1]=c.#1[0]-xTarget;cc.#1[1][1]=c.#1[1]-yTarget;cc.#1[2][1]=c.#1[2]-zTarget;
+% 操作\UTF{2461}a　z軸反時計回り
+cc.#1[0][2]=-cc.#1[0][1]*TVcosT+cc.#1[1][1]*TVsinT;cc.#1[1][2]=-cc.#1[0][1]*TVsinT-cc.#1[1][1]*TVcosT;
+cc.#1[2][2]=cc.#1[2][1];
+% 操作\UTF{2461}a　y軸反時計回り
+cc.#1[0][3]=-cc.#1[0][2]*TVcosA+cc.#1[2][2]*TVsinA;cc.#1[2][3]=-cc.#1[0][2]*TVsinA-cc.#1[2][2]*TVcosA;
+cc.#1[1][3]=cc.#1[1][2];
+% 操作\UTF{2462}　入れ替え
+cc.#1[0][4]=cc.#1[1][3];cc.#1[1][4]=cc.#1[2][3];cc.#1[2][4]=cc.#1[0][3];
+% 操作\UTF{2463}　遠近処理
+numeric TVdd;TVdd=TVd/(TVd-cc.#1[2][4]);cc.#1[0][5]=cc.#1[0][4]*TVdd;cc.#1[1][5]=cc.#1[1][4]*TVdd;
+%draw (cc.#1[0][5],cc.#1[1][5]) scaled w;
+pair gp#1;gp#1=(cc.#1[0][5],cc.#1[1][5]) scaled w;}%}%
+\def\mpTTranss#1#2.{\mpTTrans#1\ifx#2\@empty\else\mpTTranss#2.\fi}%
+%===================================================================
+% 擬似パントーンカラー 
+\def\mpPntColorDefs{%
+cmykcolor pntcl[];
+pntcl[0]=(0/1,0/1,1/1,0/1);pntcl[1]=(0/1,1/1,0/1,0/1);pntcl[2]=(1/1,0/1,0/1,0/1);pntcl[3]=(0/1,0/1,0/1,1/1);
+pntcl[4]=(0/1,0/1,29/50,0/1);pntcl[5]=(0/1,0/1,7/10,0/1);pntcl[6]=(0/1,0/1,19/20,0/1);pntcl[7]=(0/1,1/100,1/1,0/1);
+pntcl[8]=(1/20,1/10,1/1,3/20);pntcl[9]=(7/100,13/100,1/1,7/25);pntcl[10]=(7/50,1/5,22/25,1/2);pntcl[11]=(0/1,1/100,7/10,0/1);
+pntcl[12]=(0/1,1/50,4/5,0/1);pntcl[13]=(0/1,3/50,19/20,0/1);pntcl[14]=(0/1,1/10,1/1,0/1);pntcl[15]=(1/50,6/25,1/1,7/100);
+pntcl[16]=(7/100,9/50,1/1,29/100);pntcl[17]=(1/10,1/5,1/1,19/50);pntcl[18]=(0/1,1/25,71/100,0/1);pntcl[19]=(0/1,1/20,77/100,0/1);
+pntcl[20]=(0/1,7/100,4/5,0/1);pntcl[21]=(0/1,3/25,1/1,0/1);pntcl[22]=(1/50,11/50,1/1,3/20);pntcl[23]=(1/20,13/50,1/1,27/100);
+pntcl[24]=(3/20,21/100,1/1,23/50);pntcl[25]=(0/1,3/50,3/5,0/1);
+pntcl[26]=(0/1,2/25,69/100,0/1);pntcl[27]=(0/1,7/50,4/5,0/1);
+pntcl[28]=(0/1,21/100,22/25,0/1);pntcl[29]=(0/1,27/100,1/1,0/1);
+pntcl[30]=(2/25,31/100,1/1,19/100);pntcl[31]=(1/10,3/10,1/1,17/50);
+pntcl[32]=(0/1,1/20,7/20,0/1);pntcl[33]=(0/1,2/25,12/25,0/1);
+pntcl[34]=(0/1,17/100,17/25,0/1);pntcl[35]=(0/1,3/10,19/20,0/1);
+pntcl[36]=(7/100,7/20,1/1,13/100);pntcl[37]=(2/25,3/10,19/20,3/10);
+pntcl[38]=(3/20,17/50,49/50,9/20);pntcl[39]=(0/1,1/20,57/100,0/1);
+pntcl[40]=(0/1,7/100,17/25,0/1);pntcl[41]=(0/1,11/100,7/10,0/1);
+pntcl[42]=(0/1,3/10,1/1,0/1);pntcl[43]=(3/100,9/25,1/1,3/50);
+pntcl[44]=(2/25,9/25,1/1,31/100);pntcl[45]=(4/25,8/25,1/1,61/100);
+pntcl[46]=(0/1,11/100,14/25,0/1);pntcl[47]=(0/1,21/100,37/50,0/1);
+pntcl[48]=(0/1,7/25,87/100,0/1);pntcl[49]=(0/1,19/50,19/20,0/1);
+pntcl[50]=(0/1,1/2,1/1,0/1);pntcl[51]=(1/20,23/50,1/1,21/100);
+pntcl[52]=(13/100,21/50,1/1,14/25);pntcl[53]=(0/1,3/20,47/100,0/1);
+pntcl[54]=(0/1,11/50,29/50,0/1);pntcl[55]=(0/1,33/100,3/4,0/1);
+pntcl[56]=(0/1,9/20,19/20,0/1);pntcl[57]=(0/1,14/25,1/1,7/100);
+pntcl[58]=(1/10,51/100,1/1,9/25);pntcl[59]=(7/50,49/100,1/1,33/50);
+pntcl[60]=(0/1,17/100,31/50,0/1);pntcl[61]=(0/1,1/4,19/25,0/1);
+pntcl[62]=(0/1,8/25,43/50,0/1);pntcl[63]=(0/1,13/25,1/1,0/1);
+pntcl[64]=(0/1,29/50,1/1,2/25);pntcl[65]=(7/100,11/20,1/1,17/50);
+pntcl[66]=(19/100,2/5,17/20,13/20);pntcl[67]=(0/1,17/100,21/50,0/1);
+pntcl[68]=(0/1,11/50,47/100,0/1);pntcl[69]=(0/1,7/20,7/10,0/1);
+pntcl[70]=(0/1,11/20,1/1,0/1);pntcl[71]=(0/1,31/50,1/1,0/1);
+pntcl[72]=(3/100,61/100,1/1,4/25);pntcl[73]=(7/100,16/25,1/1,9/25);
+pntcl[74]=(0/1,17/50,27/50,0/1);pntcl[75]=(0/1,9/20,69/100,0/1);
+pntcl[76]=(0/1,13/25,4/5,0/1);pntcl[77]=(0/1,17/25,1/1,0/1);
+pntcl[78]=(1/100,3/4,1/1,2/25);pntcl[79]=(2/25,3/4,1/1,2/5);
+pntcl[80]=(1/5,19/25,1/1,39/50);pntcl[81]=(0/1,3/25,8/25,0/1);
+pntcl[82]=(0/1,6/25,49/100,0/1);pntcl[83]=(0/1,11/25,71/100,0/1);
+pntcl[84]=(0/1,16/25,19/20,0/1);pntcl[85]=(1/100,37/50,1/1,7/100);
+pntcl[86]=(3/50,71/100,1/1,8/25);pntcl[87]=(4/25,67/100,1/1,7/10);
+pntcl[88]=(0/1,27/100,17/50,0/1);pntcl[89]=(0/1,39/100,1/2,0/1);
+pntcl[90]=(0/1,1/2,77/100,0/1);pntcl[91]=(0/1,31/50,97/100,0/1);
+pntcl[92]=(0/1,18/25,1/1,3/100);pntcl[93]=(7/100,18/25,1/1,8/25);
+pntcl[94]=(11/100,37/50,1/1,1/2);pntcl[95]=(0/1,6/25,31/100,0/1);
+pntcl[96]=(0/1,2/5,11/25,0/1);pntcl[97]=(0/1,11/20,3/4,0/1);
+pntcl[98]=(0/1,17/25,49/50,0/1);pntcl[99]=(0/1,37/50,1/1,0/1);
+pntcl[100]=(3/100,39/50,1/1,3/20);pntcl[101]=(13/100,4/5,1/1,3/5);
+pntcl[102]=(0/1,2/5,39/100,0/1);pntcl[103]=(0/1,47/100,1/2,0/1);
+pntcl[104]=(0/1,14/25,31/50,0/1);pntcl[105]=(0/1,17/25,9/10,0/1);
+pntcl[106]=(0/1,19/25,1/1,0/1);pntcl[107]=(1/20,41/50,1/1,13/50);
+pntcl[108]=(11/100,41/50,1/1,12/25);pntcl[109]=(0/1,3/10,11/50,0/1);
+pntcl[110]=(0/1,1/2,9/20,0/1);pntcl[111]=(0/1,61/100,7/10,0/1);
+pntcl[112]=(0/1,18/25,9/10,0/1);pntcl[113]=(0/1,4/5,47/50,1/100);
+pntcl[114]=(2/25,17/20,1/1,17/50);pntcl[115]=(9/50,79/100,71/100,14/25);
+pntcl[116]=(0/1,17/50,9/50,0/1);pntcl[117]=(0/1,29/50,19/50,0/1);
+pntcl[118]=(0/1,37/50,57/100,0/1);pntcl[119]=(0/1,43/50,4/5,0/1);
+pntcl[120]=(0/1,22/25,21/25,0/1);pntcl[121]=(3/100,23/25,21/25,3/25);
+pntcl[122]=(7/50,47/50,22/25,51/100);pntcl[123]=(0/1,43/100,4/25,0/1);
+pntcl[124]=(0/1,1/2,21/100,0/1);pntcl[125]=(0/1,79/100,1/2,0/1);
+pntcl[126]=(0/1,22/25,4/5,0/1);pntcl[127]=(0/1,24/25,9/10,1/50);
+pntcl[128]=(1/20,24/25,19/25,21/100);pntcl[129]=(13/100,24/25,81/100,27/50);
+pntcl[130]=(0/1,8/25,1/10,0/1);pntcl[131]=(0/1,17/25,7/25,0/1);
+pntcl[132]=(0/1,41/50,53/100,0/1);pntcl[133]=(0/1,9/10,3/5,0/1);
+pntcl[134]=(1/50,49/50,17/20,7/100);pntcl[135]=(7/100,47/50,13/20,31/100);
+pntcl[136]=(23/100,21/25,27/50,17/25);pntcl[137]=(0/1,3/10,2/25,0/1);
+pntcl[138]=(0/1,47/100,3/20,0/1);pntcl[139]=(0/1,19/25,8/25,0/1);
+pntcl[140]=(0/1,23/25,19/25,0/1);pntcl[141]=(0/1,1/1,3/4,1/25);
+pntcl[142]=(1/20,1/1,71/100,11/50);pntcl[143]=(3/25,19/20,59/100,27/50);
+pntcl[144]=(0/1,2/5,2/25,0/1);pntcl[145]=(0/1,29/50,4/25,0/1);
+pntcl[146]=(0/1,4/5,7/20,0/1);pntcl[147]=(0/1,97/100,3/5,0/1);
+pntcl[148]=(1/50,1/1,3/5,11/100);pntcl[149]=(7/100,1/1,27/50,7/20);
+pntcl[150]=(7/50,22/25,21/50,14/25);pntcl[151]=(0/1,7/25,1/50,0/1);
+pntcl[152]=(0/1,23/50,3/50,0/1);pntcl[153]=(0/1,77/100,21/100,0/1);
+pntcl[154]=(0/1,49/50,23/50,0/1);pntcl[155]=(1/100,1/1,51/100,3/50);
+pntcl[156]=(1/20,1/1,1/2,6/25);pntcl[157]=(2/25,1/1,47/100,39/100);
+pntcl[158]=(0/1,23/100,1/20,0/1);pntcl[159]=(0/1,9/20,3/25,0/1);
+pntcl[160]=(0/1,41/50,37/100,0/1);pntcl[161]=(0/1,1/1,13/20,0/1);
+pntcl[162]=(3/100,1/1,33/50,3/25);pntcl[163]=(7/100,1/1,13/20,8/25);
+pntcl[164]=(1/10,97/100,61/100,12/25);pntcl[165]=(0/1,9/25,1/50,0/1);
+pntcl[166]=(0/1,59/100,1/20,0/1);pntcl[167]=(0/1,83/100,17/100,0/1);
+pntcl[168]=(0/1,1/1,12/25,0/1);pntcl[169]=(1/20,1/1,9/20,11/50);
+pntcl[170]=(1/10,97/100,37/100,43/100);pntcl[171]=(7/50,47/50,9/25,3/5);
+pntcl[172]=(0/1,11/25,1/25,0/1);pntcl[173]=(0/1,61/100,3/50,0/1);
+pntcl[174]=(0/1,39/50,2/25,0/1);pntcl[175]=(0/1,23/25,9/50,0/1);
+pntcl[176]=(0/1,1/1,6/25,1/25);pntcl[177]=(1/20,1/1,13/50,6/25);
+pntcl[178]=(3/25,24/25,13/50,1/2);pntcl[179]=(1/100,31/100,0/1,0/1);
+pntcl[180]=(1/50,31/50,0/1,0/1);pntcl[181]=(1/100,23/25,1/100,0/1);
+pntcl[182]=(0/1,1/1,9/50,3/100);
+pntcl[183]=(1/20,1/1,11/50,23/100);
+pntcl[184]=(2/25,1/1,6/25,7/20);
+pntcl[185]=(17/100,1/1,21/100,3/5);
+pntcl[186]=(1/100,1/2,0/1,0/1);
+pntcl[187]=(1/25,71/100,0/1,0/1);
+pntcl[188]=(1/20,9/10,0/1,0/1);
+pntcl[189]=(0/1,1/1,1/50,0/1);
+pntcl[190]=(3/50,1/1,7/100,1/5);
+pntcl[191]=(3/20,1/1,11/100,41/100);
+pntcl[192]=(6/25,1/1,17/100,3/5);
+pntcl[193]=(1/100,2/5,0/1,0/1);
+pntcl[194]=(3/100,29/50,0/1,0/1);
+pntcl[195]=(3/50,69/100,0/1,0/1);
+pntcl[196]=(9/100,87/100,0/1,0/1);
+pntcl[197]=(3/25,1/1,0/1,0/1);
+pntcl[198]=(9/50,1/1,1/25,17/100);
+pntcl[199]=(19/100,1/1,9/100,2/5);
+pntcl[200]=(3/100,9/25,0/1,0/1);
+pntcl[201]=(3/50,51/100,0/1,0/1);
+pntcl[202]=(7/50,37/50,0/1,0/1);
+pntcl[203]=(9/50,4/5,0/1,0/1);
+pntcl[204]=(21/100,9/10,0/1,0/1);
+pntcl[205]=(33/100,1/1,1/100,1/50);
+pntcl[206]=(31/100,1/1,9/100,11/25);
+pntcl[207]=(3/100,29/100,0/1,0/1);
+pntcl[208]=(4/25,61/100,0/1,0/1);
+pntcl[209]=(13/50,21/25,0/1,0/1);
+pntcl[210]=(29/100,19/20,0/1,0/1);
+pntcl[211]=(19/50,1/1,0/1,0/1);
+pntcl[212]=(39/100,1/1,0/1,7/100);
+pntcl[213]=(2/5,1/1,3/50,27/100);
+pntcl[214]=(1/20,3/10,0/1,0/1);
+pntcl[215]=(11/100,43/100,0/1,0/1);
+pntcl[216]=(19/100,14/25,0/1,0/1);
+pntcl[217]=(17/50,9/10,0/1,0/1);
+pntcl[218]=(37/100,1/1,0/1,0/1);
+pntcl[219]=(9/20,1/1,0/1,0/1);
+pntcl[220]=(43/100,19/20,7/100,8/25);
+pntcl[221]=(7/100,13/50,0/1,0/1);
+pntcl[222]=(4/25,41/100,0/1,0/1);
+pntcl[223]=(31/100,33/50,0/1,0/1);
+pntcl[224]=(43/100,9/10,0/1,0/1);
+pntcl[225]=(23/50,91/100,0/1,0/1);
+pntcl[226]=(13/25,24/25,0/1,0/1);
+pntcl[227]=(11/20,24/25,3/50,1/4);
+pntcl[228]=(9/100,1/5,0/1,0/1);
+pntcl[229]=(19/100,17/50,0/1,0/1);
+pntcl[230]=(1/2,77/100,0/1,0/1);
+pntcl[231]=(69/100,1/1,1/100,1/20);
+pntcl[232]=(33/50,1/1,3/50,7/25);
+pntcl[233]=(31/50,49/50,9/100,9/20);
+pntcl[234]=(57/100,23/25,3/25,14/25);
+pntcl[235]=(1/5,33/100,0/1,0/1);
+pntcl[236]=(3/10,1/2,0/1,0/1);
+pntcl[237]=(1/2,3/4,0/1,0/1);
+pntcl[238]=(61/100,22/25,0/1,0/1);
+pntcl[239]=(17/25,1/1,0/1,0/1);
+pntcl[240]=(7/10,1/1,0/1,1/20);
+pntcl[241]=(13/20,91/100,9/100,9/20);
+pntcl[242]=(23/100,37/100,0/1,0/1);
+pntcl[243]=(9/25,1/2,0/1,0/1);
+pntcl[244]=(12/25,7/10,0/1,0/1);
+pntcl[245]=(67/100,91/100,0/1,0/1);
+pntcl[246]=(73/100,49/50,0/1,3/100);
+pntcl[247]=(37/50,49/50,1/50,3/25);
+pntcl[248]=(37/50,1/1,1/20,7/25);
+pntcl[249]=(3/10,19/50,0/1,0/1);
+pntcl[250]=(11/25,1/2,0/1,0/1);
+pntcl[251]=(33/50,19/25,0/1,0/1);
+pntcl[252]=(39/50,47/50,0/1,0/1);
+pntcl[253]=(21/25,1/1,0/1,1/25);
+pntcl[254]=(21/25,1/1,0/1,13/100);
+pntcl[255]=(21/25,1/1,7/100,33/100);
+pntcl[256]=(3/25,3/20,0/1,0/1);
+pntcl[257]=(27/100,7/25,0/1,0/1);
+pntcl[258]=(14/25,59/100,0/1,0/1);
+pntcl[259]=(41/50,22/25,0/1,0/1);
+pntcl[260]=(43/50,24/25,0/1,0/1);
+pntcl[261]=(43/50,1/1,0/1,3/25);
+pntcl[262]=(4/5,19/20,0/1,7/20);
+pntcl[263]=(1/4,13/50,0/1,0/1);
+pntcl[264]=(19/50,19/50,0/1,0/1);
+pntcl[265]=(53/100,11/20,0/1,0/1);
+pntcl[266]=(67/100,17/25,0/1,0/1);
+pntcl[267]=(23/25,49/50,0/1,0/1);
+pntcl[268]=(23/25,1/1,0/1,1/10);
+pntcl[269]=(9/10,1/1,1/10,47/100);
+pntcl[270]=(31/100,1/4,0/1,0/1);
+pntcl[271]=(12/25,2/5,0/1,0/1);
+pntcl[272]=(3/5,1/2,0/1,0/1);
+pntcl[273]=(1/1,1/1,0/1,3/20);
+pntcl[274]=(1/1,1/1,0/1,8/25);
+pntcl[275]=(1/1,1/1,2/25,43/100);
+pntcl[276]=(1/1,1/1,13/100,17/25);
+pntcl[277]=(39/100,3/10,0/1,0/1);
+pntcl[278]=(14/25,23/50,0/1,0/1);
+pntcl[279]=(19/25,7/10,0/1,0/1);
+pntcl[280]=(1/1,19/20,0/1,3/100);
+pntcl[281]=(1/1,19/20,0/1,3/20);
+pntcl[282]=(1/1,49/50,0/1,6/25);
+pntcl[283]=(1/1,49/50,0/1,9/20);
+pntcl[284]=(21/100,9/100,0/1,0/1);
+pntcl[285]=(21/50,27/100,0/1,0/1);
+pntcl[286]=(21/25,7/10,0/1,0/1);
+pntcl[287]=(1/1,23/25,0/1,0/1);
+pntcl[288]=(1/1,22/25,0/1,1/10);
+pntcl[289]=(1/1,9/10,0/1,3/10);
+pntcl[290]=(1/1,23/25,1/10,47/100);
+pntcl[291]=(21/100,1/25,0/1,0/1);
+pntcl[292]=(17/50,1/10,0/1,0/1);
+pntcl[293]=(3/4,2/5,0/1,0/1);
+pntcl[294]=(1/1,17/20,0/1,1/25);
+pntcl[295]=(1/1,17/20,1/25,4/25);
+pntcl[296]=(1/1,41/50,2/25,8/25);
+pntcl[297]=(1/1,3/4,3/25,67/100);
+pntcl[298]=(7/25,9/100,0/1,0/1);
+pntcl[299]=(17/25,39/100,0/1,0/1);
+pntcl[300]=(24/25,33/50,0/1,0/1);
+pntcl[301]=(1/1,21/25,0/1,1/50);
+pntcl[302]=(1/1,9/10,1/25,3/25);
+pntcl[303]=(1/1,91/100,7/100,8/25);
+pntcl[304]=(1/1,9/10,13/100,61/100);
+pntcl[305]=(8/25,3/50,0/1,0/1);
+pntcl[306]=(11/25,13/100,0/1,0/1);
+pntcl[307]=(7/10,33/100,0/1,0/1);
+pntcl[308]=(1/1,41/50,0/1,1/50);
+pntcl[309]=(1/1,39/50,1/20,9/50);
+pntcl[310]=(1/1,17/20,1/20,1/5);
+pntcl[311]=(1/1,41/50,1/10,16/25);
+pntcl[312]=(2/5,2/25,0/1,0/1);
+pntcl[313]=(29/50,17/100,0/1,0/1);
+pntcl[314]=(9/10,12/25,0/1,0/1);
+pntcl[315]=(1/1,18/25,0/1,0/1);
+pntcl[316]=(1/1,18/25,1/50,3/25);
+pntcl[317]=(1/1,3/4,3/50,6/25);
+pntcl[318]=(1/1,19/25,1/10,13/20);
+pntcl[319]=(6/25,1/100,1/100,0/1);
+pntcl[320]=(9/25,3/100,0/1,0/1);
+pntcl[321]=(29/50,11/100,0/1,0/1);
+pntcl[322]=(1/1,17/25,0/1,1/50);
+pntcl[323]=(1/1,17/25,7/100,7/25);
+pntcl[324]=(1/1,17/25,2/25,13/25);
+pntcl[325]=(1/1,73/100,3/10,83/100);
+pntcl[326]=(11/25,1/100,0/1,0/1);
+pntcl[327]=(61/100,7/100,0/1,0/1);
+pntcl[328]=(21/25,21/100,0/1,0/1);
+pntcl[329]=(1/1,13/25,0/1,0/1);
+pntcl[330]=(1/1,13/25,1/50,3/25);
+pntcl[331]=(1/1,11/20,1/10,12/25);
+pntcl[332]=(1/1,14/25,19/100,73/100);
+pntcl[333]=(51/100,0/1,1/100,0/1);
+pntcl[334]=(17/25,3/100,0/1,0/1);
+pntcl[335]=(43/50,2/25,0/1,0/1);
+pntcl[336]=(1/1,21/50,0/1,0/1);
+pntcl[337]=(1/1,23/50,1/20,9/50);
+pntcl[338]=(1/1,43/100,3/25,14/25);
+pntcl[339]=(1/1,47/100,23/100,77/100);
+pntcl[340]=(7/20,0/1,3/50,0/1);
+pntcl[341]=(3/5,0/1,1/25,0/1);
+pntcl[342]=(87/100,1/100,0/1,0/1);
+pntcl[343]=(1/1,7/25,0/1,0/1);
+pntcl[344]=(1/1,31/100,1/20,1/5);
+pntcl[345]=(1/1,6/25,11/100,13/25);
+pntcl[346]=(1/1,1/4,9/50,18/25);
+pntcl[347]=(9/25,0/1,3/50,0/1);
+pntcl[348]=(57/100,0/1,7/100,0/1);
+pntcl[349]=(79/100,0/1,3/50,1/20);
+pntcl[350]=(1/1,13/100,1/100,3/100);
+pntcl[351]=(1/1,1/5,1/25,9/50);
+pntcl[352]=(1/1,19/100,2/25,23/50);
+pntcl[353]=(1/1,6/25,1/5,77/100);
+pntcl[354]=(12/25,0/1,9/100,0/1);
+pntcl[355]=(17/25,0/1,13/100,0/1);
+pntcl[356]=(47/50,0/1,11/100,0/1);
+pntcl[357]=(1/1,0/1,1/10,1/25);
+pntcl[358]=(1/1,1/25,7/50,9/50);
+pntcl[359]=(1/1,2/25,9/50,19/50);
+pntcl[360]=(1/1,3/20,13/50,7/10);
+pntcl[361]=(1/2,0/1,3/25,0/1);
+pntcl[362]=(69/100,0/1,4/25,0/1);
+pntcl[363]=(89/100,0/1,1/5,0/1);
+pntcl[364]=(1/1,1/100,1/5,3/100);
+pntcl[365]=(1/1,1/20,1/5,11/50);
+pntcl[366]=(1/1,2/25,13/50,19/50);
+pntcl[367]=(1/1,3/25,7/25,59/100);
+pntcl[368]=(6/25,0/1,7/100,0/1);
+pntcl[369]=(41/100,0/1,3/25,0/1);
+pntcl[370]=(31/50,0/1,1/5,0/1);
+pntcl[371]=(1/1,0/1,3/10,1/50);
+pntcl[372]=(1/1,1/50,8/25,3/25);
+pntcl[373]=(1/1,3/50,7/20,8/25);
+pntcl[374]=(1/1,1/10,9/25,12/25);
+pntcl[375]=(37/100,0/1,7/50,0/1);
+pntcl[376]=(27/50,0/1,11/50,0/1);
+pntcl[377]=(17/20,0/1,19/50,0/1);
+pntcl[378]=(1/1,1/50,49/100,7/50);
+pntcl[379]=(1/1,1/20,1/2,13/50);
+pntcl[380]=(1/1,2/25,1/2,2/5);
+pntcl[381]=(19/20,3/20,47/100,31/50);
+pntcl[382]=(23/50,0/1,9/50,0/1);
+pntcl[383]=(27/50,0/1,6/25,0/1);
+pntcl[384]=(39/50,0/1,8/25,0/1);
+pntcl[385]=(49/50,0/1,21/50,0/1);
+pntcl[386]=(1/1,0/1,9/20,3/25);
+pntcl[387]=(1/1,11/100,12/25,1/2);
+pntcl[388]=(47/50,4/25,12/25,13/20);
+pntcl[389]=(9/20,0/1,21/100,0/1);
+pntcl[390]=(11/20,0/1,13/50,0/1);
+pntcl[391]=(19/25,0/1,19/50,0/1);
+pntcl[392]=(47/50,0/1,47/100,0/1);
+pntcl[393]=(97/100,1/100,49/100,3/100);
+pntcl[394]=(1/1,1/20,51/100,23/100);
+pntcl[395]=(23/25,17/100,13/25,13/20);
+pntcl[396]=(47/100,0/1,6/25,0/1);
+pntcl[397]=(63/100,0/1,8/25,0/1);
+pntcl[398]=(89/100,0/1,1/2,0/1);
+pntcl[399]=(1/1,0/1,59/100,0/1);
+pntcl[400]=(1/1,3/100,29/50,4/25);
+pntcl[401]=(1/1,2/25,59/100,19/50);
+pntcl[402]=(1/1,1/5,59/100,37/50);
+pntcl[403]=(27/100,0/1,7/50,0/1);
+pntcl[404]=(33/100,0/1,17/100,0/1);
+pntcl[405]=(14/25,0/1,3/10,0/1);
+pntcl[406]=(19/20,0/1,29/50,0/1);
+pntcl[407]=(1/1,0/1,3/5,3/100);
+pntcl[408]=(1/1,0/1,29/50,11/50);
+pntcl[409]=(1/1,9/100,29/50,9/20);
+pntcl[410]=(2/5,0/1,23/100,0/1);
+pntcl[411]=(49/100,0/1,7/25,0/1);
+pntcl[412]=(21/25,0/1,27/50,0/1);
+pntcl[413]=(1/1,0/1,37/50,0/1);
+pntcl[414]=(1/1,0/1,67/100,3/10);
+pntcl[415]=(1/1,9/100,33/50,41/100);
+pntcl[416]=(19/20,3/20,31/50,29/50);
+pntcl[417]=(2/5,0/1,13/50,0/1);
+pntcl[418]=(27/50,0/1,37/100,0/1);
+pntcl[419]=(37/50,0/1,13/25,0/1);
+pntcl[420]=(9/10,0/1,7/10,0/1);
+pntcl[421]=(1/1,1/20,18/25,6/25);
+pntcl[422]=(1/1,1/10,69/100,11/25);
+pntcl[423]=(19/20,19/100,7/10,18/25);
+pntcl[424]=(33/100,0/1,13/50,0/1);
+pntcl[425]=(43/100,0/1,33/100,0/1);
+pntcl[426]=(14/25,0/1,21/50,0/1);
+pntcl[427]=(24/25,0/1,22/25,1/100);
+pntcl[428]=(1/1,1/25,87/100,9/50);
+pntcl[429]=(47/50,11/100,21/25,43/100);
+pntcl[430]=(4/5,6/25,69/100,7/10);
+pntcl[431]=(17/50,0/1,13/50,0/1);
+pntcl[432]=(37/100,0/1,29/100,0/1);
+pntcl[433]=(23/50,0/1,9/25,0/1);
+pntcl[434]=(89/100,0/1,9/10,0/1);
+pntcl[435]=(19/20,0/1,49/50,0/1);
+pntcl[436]=(19/20,2/25,93/100,27/100);
+pntcl[437]=(83/100,19/100,73/100,29/50);
+pntcl[438]=(19/50,0/1,9/20,0/1);
+pntcl[439]=(21/50,0/1,12/25,0/1);
+pntcl[440]=(31/50,0/1,39/50,0/1);
+pntcl[441]=(3/4,0/1,1/1,0/1);
+pntcl[442]=(39/50,1/50,49/50,9/100);
+pntcl[443]=(39/50,1/20,49/50,6/25);
+pntcl[444]=(73/100,9/100,47/50,39/100);
+pntcl[445]=(11/50,0/1,9/25,0/1);
+pntcl[446]=(29/100,0/1,9/20,0/1);
+pntcl[447]=(37/100,0/1,29/50,0/1);
+pntcl[448]=(63/100,0/1,97/100,0/1);
+pntcl[449]=(67/100,0/1,49/50,1/20);
+pntcl[450]=(16/25,1/20,1/1,6/25);
+pntcl[451]=(53/100,7/50,89/100,14/25);
+pntcl[452]=(4/25,0/1,9/25,0/1);
+pntcl[453]=(1/5,0/1,21/50,0/1);
+pntcl[454]=(27/100,0/1,11/20,0/1);
+pntcl[455]=(47/100,0/1,47/50,0/1);
+pntcl[456]=(53/100,0/1,24/25,0/1);
+pntcl[457]=(51/100,1/20,49/50,23/100);
+pntcl[458]=(43/100,13/100,49/50,31/50);
+pntcl[459]=(1/10,0/1,27/50,0/1);
+pntcl[460]=(3/20,0/1,18/25,0/1);
+pntcl[461]=(23/100,0/1,89/100,0/1);
+pntcl[462]=(7/25,0/1,23/25,0/1);
+pntcl[463]=(13/50,3/100,93/100,17/100);
+pntcl[464]=(6/25,1/20,49/50,7/20);
+pntcl[465]=(11/50,7/50,23/25,14/25);
+pntcl[466]=(3/50,0/1,27/50,0/1);
+pntcl[467]=(1/10,0/1,18/25,0/1);
+pntcl[468]=(7/50,0/1,19/25,0/1);
+pntcl[469]=(23/100,0/1,83/100,0/1);
+pntcl[470]=(6/25,0/1,49/50,2/25);
+pntcl[471]=(1/5,1/25,1/1,8/25);
+pntcl[472]=(1/5,3/25,1/1,12/25);
+pntcl[473]=(3/100,0/1,12/25,0/1);
+pntcl[474]=(3/100,0/1,33/50,0/1);
+pntcl[475]=(7/100,0/1,79/100,0/1);
+pntcl[476]=(11/100,0/1,9/10,0/1);
+pntcl[477]=(1/10,1/100,49/50,3/20);
+pntcl[478]=(11/100,1/25,1/1,1/4);
+pntcl[479]=(7/50,1/10,1/1,7/20);
+pntcl[480]=(1/100,0/1,29/50,0/1);
+pntcl[481]=(1/100,0/1,73/100,0/1);
+pntcl[482]=(1/25,0/1,1/1,0/1);
+pntcl[483]=(3/50,0/1,1/1,0/1);
+pntcl[484]=(3/50,9/100,1/1,11/50);
+pntcl[485]=(11/100,4/25,1/1,19/50);
+pntcl[486]=(17/100,13/50,1/1,33/50);
+pntcl[487]=(1/20,3/50,1/10,7/50);
+pntcl[488]=(2/25,9/100,7/50,6/25);
+pntcl[489]=(1/10,13/100,4/25,29/100);
+pntcl[490]=(7/50,9/50,11/50,21/50);
+pntcl[491]=(9/50,23/100,27/100,11/20);
+pntcl[492]=(23/100,29/100,8/25,67/100);
+pntcl[493]=(14/25,14/25,53/100,23/25);
+pntcl[494]=(1/20,9/100,1/10,13/100);
+pntcl[495]=(2/25,3/20,13/100,6/25);
+pntcl[496]=(11/100,19/100,9/50,7/20);
+pntcl[497]=(4/25,1/4,21/100,9/20);
+pntcl[498]=(19/100,31/100,13/50,14/25);
+pntcl[499]=(27/100,39/100,3/10,7/10);
+pntcl[500]=(53/100,14/25,9/20,87/100);
+pntcl[501]=(2/25,1/20,3/25,3/20);
+pntcl[502]=(13/100,2/25,4/25,13/50);
+pntcl[503]=(17/100,3/25,1/5,17/50);
+pntcl[504]=(11/50,7/50,6/25,9/20);
+pntcl[505]=(7/25,9/50,7/25,27/50);
+pntcl[506]=(33/100,23/100,17/50,17/25);
+pntcl[507]=(87/100,37/50,63/100,19/20);
+pntcl[508]=(3/50,1/25,7/100,11/100);
+pntcl[509]=(3/25,2/25,9/100,21/100);
+pntcl[510]=(4/25,11/100,11/100,29/100);
+pntcl[511]=(21/100,7/50,7/50,19/50);
+pntcl[512]=(3/10,11/50,19/100,53/100);
+pntcl[513]=(19/50,7/25,21/100,63/100);
+pntcl[514]=(91/100,37/50,51/100,93/100);
+pntcl[515]=(7/100,3/100,1/25,2/25);
+pntcl[516]=(3/25,3/50,1/20,3/25);
+pntcl[517]=(21/100,11/100,9/100,11/50);
+pntcl[518]=(33/100,9/50,13/100,37/100);
+pntcl[519]=(9/20,27/100,17/100,51/100);
+pntcl[520]=(67/100,9/20,27/100,7/10);
+pntcl[521]=(9/10,69/100,2/5,89/100);
+pntcl[522]=(1/20,11/100,2/25,3/25);
+pntcl[523]=(9/100,17/100,2/25,9/50);
+pntcl[524]=(7/50,23/100,1/10,13/50);
+pntcl[525]=(21/100,37/100,9/50,1/2);
+pntcl[526]=(37/100,51/100,33/100,39/50);
+pntcl[527]=(41/100,27/50,37/100,21/25);
+pntcl[528]=(13/25,61/100,47/100,23/25);
+pntcl[529]=(9/50,1/25,1/10,13/100);
+pntcl[530]=(23/100,7/100,3/25,9/50);
+pntcl[531]=(29/100,1/10,7/50,7/25);
+pntcl[532]=(19/50,3/20,9/50,43/100);
+pntcl[533]=(1/2,7/25,6/25,13/20);
+pntcl[534]=(13/25,8/25,3/10,19/25);
+pntcl[535]=(11/20,39/100,19/50,83/100);
+pntcl[536]=(1/50,3/100,1/25,1/20);
+pntcl[537]=(1/25,1/20,7/100,1/10);
+pntcl[538]=(3/50,7/100,9/100,3/20);
+pntcl[539]=(9/100,11/100,13/100,23/100);
+pntcl[540]=(11/100,13/100,7/50,13/50);
+pntcl[541]=(11/100,4/25,9/50,8/25);
+pntcl[542]=(7/50,19/100,21/100,19/50);
+pntcl[543]=(4/25,23/100,23/100,11/25);
+pntcl[544]=(17/100,1/4,1/4,49/100);
+pntcl[545]=(1/5,29/100,7/25,14/25);
+pntcl[546]=(23/100,8/25,31/100,16/25);
+pntcl[547]=(3/100,1/50,1/25,1/20);
+pntcl[548]=(1/20,3/100,1/25,2/25);
+pntcl[549]=(2/25,1/20,3/50,13/100);
+pntcl[550]=(3/25,7/100,3/50,17/100);
+pntcl[551]=(3/20,9/100,2/25,11/50);
+pntcl[552]=(9/50,11/100,2/25,23/100);
+pntcl[553]=(11/50,3/20,11/100,8/25);
+pntcl[554]=(23/100,17/100,13/100,41/100);
+pntcl[555]=(29/100,23/100,4/25,51/100);
+pntcl[556]=(19/50,29/100,1/5,29/50);
+pntcl[557]=(12/25,9/25,6/25,33/50);
+pntcl[558]=(39/100,21/50,17/25,22/25);
+pntcl[559]=(18/25,23/50,14/25,19/20);
+pntcl[560]=(2/5,53/100,59/100,89/100);
+pntcl[561]=(37/100,3/5,7/20,4/5);
+pntcl[562]=(1/1,39/50,11/25,91/100);
+pntcl[563]=(51/100,11/25,9/25,21/25);
+pntcl[564]=(3/10,7/20,31/50,79/100);
+pntcl[565]=(8/25,9/25,73/100,77/100);
+pntcl[566]=(31/100,31/100,77/100,37/50);
+pntcl[567]=(17/100,13/100,9/20,17/50);
+pntcl[568]=(3/25,2/25,7/20,11/50);
+pntcl[569]=(1/10,3/50,7/25,7/50);
+pntcl[570]=(7/100,1/25,11/50,2/25);
+pntcl[571]=(6/25,21/50,89/100,18/25);
+pntcl[572]=(4/25,31/100,4/5,51/100);
+pntcl[573]=(13/100,23/100,67/100,19/50);
+pntcl[574]=(2/25,7/50,1/2,6/25);
+pntcl[575]=(3/50,9/100,39/100,4/25);
+pntcl[576]=(1/20,7/100,8/25,1/10);
+pntcl[577]=(3/100,1/20,1/4,1/20);
+pntcl[578]=(21/100,17/50,93/100,33/50);
+pntcl[579]=(9/100,1/4,49/50,41/100);
+pntcl[580]=(3/50,23/100,97/100,13/50);
+pntcl[581]=(1/50,7/100,29/50,7/100);
+pntcl[582]=(1/50,1/20,53/100,1/20);
+pntcl[583]=(1/50,1/50,43/100,3/100);
+pntcl[584]=(1/50,1/100,33/100,1/100);
+pntcl[585]=(7/25,12/25,71/100,18/25);
+pntcl[586]=(17/100,13/25,87/100,63/100);
+pntcl[587]=(13/100,51/100,87/100,12/25);
+pntcl[588]=(7/100,27/100,11/20,11/50);
+pntcl[589]=(1/20,17/100,21/50,7/50);
+pntcl[590]=(3/100,3/25,17/50,1/10);
+pntcl[591]=(1/50,7/100,13/50,1/20);
+pntcl[592]=(29/100,39/50,91/100,39/50);
+pntcl[593]=(13/100,53/100,17/25,2/5);
+pntcl[594]=(2/25,43/100,1/2,13/50);
+pntcl[595]=(3/50,19/50,21/50,9/50);
+pntcl[596]=(1/25,27/100,33/100,11/100);
+pntcl[597]=(1/50,9/50,6/25,3/50);
+pntcl[598]=(1/100,7/50,1/5,1/25);
+pntcl[599]=(21/100,7/10,23/25,7/10);
+pntcl[600]=(2/25,17/25,47/50,17/50);
+pntcl[601]=(1/20,7/10,97/100,1/5);
+pntcl[602]=(0/1,11/25,53/100,1/100);
+pntcl[603]=(0/1,13/50,31/100,0/1);
+pntcl[604]=(0/1,23/100,3/10,0/1);
+pntcl[605]=(0/1,9/50,1/4,0/1);
+pntcl[606]=(29/100,79/100,71/100,73/100);
+pntcl[607]=(17/100,16/25,3/5,51/100);
+pntcl[608]=(13/100,47/100,43/100,19/50);
+pntcl[609]=(9/100,9/25,33/100,13/50);
+pntcl[610]=(3/50,27/100,1/4,17/100);
+pntcl[611]=(1/25,1/5,11/50,3/25);
+pntcl[612]=(3/100,7/50,4/25,7/100);
+pntcl[613]=(8/25,67/100,63/100,39/50);
+pntcl[614]=(1/4,3/4,73/100,17/25);
+pntcl[615]=(19/100,3/4,37/50,29/50);
+pntcl[616]=(9/100,43/100,9/20,27/100);
+pntcl[617]=(1/25,1/4,27/100,7/50);
+pntcl[618]=(3/100,17/100,21/100,2/25);
+pntcl[619]=(1/50,13/100,9/50,3/50);
+pntcl[620]=(1/5,81/100,19/25,61/100);
+pntcl[621]=(2/25,91/100,23/25,33/100);
+pntcl[622]=(0/1,93/100,19/20,0/1);
+pntcl[623]=(0/1,13/25,43/100,0/1);
+pntcl[624]=(0/1,2/5,33/100,0/1);
+pntcl[625]=(0/1,7/25,6/25,0/1);
+pntcl[626]=(0/1,21/100,19/100,0/1);
+pntcl[627]=(29/100,17/20,27/50,18/25);
+pntcl[628]=(3/20,17/20,53/100,27/50);
+pntcl[629]=(3/25,21/25,53/100,11/25);
+pntcl[630]=(1/100,27/50,17/100,1/25);
+pntcl[631]=(0/1,43/100,1/10,0/1);
+pntcl[632]=(0/1,31/100,3/50,0/1);
+pntcl[633]=(0/1,1/4,1/20,0/1);
+pntcl[634]=(8/25,73/100,13/25,4/5);
+pntcl[635]=(23/100,37/50,27/50,63/100);
+pntcl[636]=(19/100,37/50,29/50,14/25);
+pntcl[637]=(1/20,47/100,1/5,7/50);
+pntcl[638]=(0/1,9/25,3/25,1/25);
+pntcl[639]=(0/1,13/50,9/100,1/100);
+pntcl[640]=(0/1,9/50,3/50,1/100);
+pntcl[641]=(9/25,21/25,59/100,83/100);
+pntcl[642]=(4/25,63/100,8/25,47/100);
+pntcl[643]=(11/100,53/100,1/4,33/100);
+pntcl[644]=(2/25,11/25,9/50,21/100);
+pntcl[645]=(3/100,31/100,13/100,1/10);
+pntcl[646]=(1/50,6/25,1/10,1/20);
+pntcl[647]=(1/100,17/100,7/100,3/100);
+pntcl[648]=(3/10,41/50,11/25,73/100);
+pntcl[649]=(1/5,43/50,19/50,31/50);
+pntcl[650]=(7/50,83/100,8/25,49/100);
+pntcl[651]=(1/50,9/20,3/50,3/50);
+pntcl[652]=(1/50,9/25,1/25,1/100);
+pntcl[653]=(0/1,3/10,1/25,1/100);
+pntcl[654]=(0/1,1/4,1/25,0/1);
+pntcl[655]=(23/50,9/10,3/25,1/2);
+pntcl[656]=(11/20,99/100,3/100,4/25);
+pntcl[657]=(14/25,49/50,0/1,0/1);
+pntcl[658]=(17/100,53/100,0/1,0/1);
+pntcl[659]=(9/100,39/100,0/1,0/1);
+pntcl[660]=(1/25,3/10,0/1,0/1);
+pntcl[661]=(1/50,6/25,0/1,0/1);
+pntcl[662]=(13/25,17/20,21/100,16/25);
+pntcl[663]=(9/20,77/100,13/100,21/50);
+pntcl[664]=(37/100,61/100,9/100,13/50);
+pntcl[665]=(27/100,23/50,3/50,9/50);
+pntcl[666]=(13/100,29/100,3/100,2/25);
+pntcl[667]=(3/50,17/100,1/50,1/25);
+pntcl[668]=(1/25,7/50,1/50,1/25);
+pntcl[669]=(14/25,4/5,19/100,57/100);
+pntcl[670]=(16/25,22/25,1/10,39/100);
+pntcl[671]=(33/50,43/50,1/20,17/100);
+pntcl[672]=(7/20,49/100,0/1,0/1);
+pntcl[673]=(23/100,9/25,0/1,0/1);
+pntcl[674]=(4/25,27/100,0/1,0/1);
+pntcl[675]=(11/100,19/100,0/1,0/1);
+pntcl[676]=(13/25,37/50,13/50,17/25);
+pntcl[677]=(21/50,67/100,9/50,13/25);
+pntcl[678]=(27/100,12/25,11/100,17/50);
+pntcl[679]=(3/20,33/100,7/100,1/5);
+pntcl[680]=(9/100,23/100,1/25,11/100);
+pntcl[681]=(1/20,4/25,3/100,2/25);
+pntcl[682]=(1/50,9/100,3/100,1/20);
+pntcl[683]=(71/100,9/10,9/100,37/100);
+pntcl[684]=(19/25,99/100,0/1,0/1);
+pntcl[685]=(3/4,1/1,0/1,0/1);
+pntcl[686]=(2/5,14/25,0/1,0/1);
+pntcl[687]=(1/4,37/100,0/1,0/1);
+pntcl[688]=(13/100,7/25,0/1,0/1);
+pntcl[689]=(1/10,1/5,0/1,0/1);
+pntcl[690]=(97/100,19/20,3/20,13/20);
+pntcl[691]=(21/25,79/100,1/10,19/50);
+pntcl[692]=(73/100,31/50,2/25,13/50);
+pntcl[693]=(12/25,39/100,1/20,7/50);
+pntcl[694]=(27/100,1/5,1/50,7/100);
+pntcl[695]=(19/100,3/20,1/50,1/20);
+pntcl[696]=(1/10,7/100,1/100,1/25);
+pntcl[697]=(21/25,7/10,3/10,19/25);
+pntcl[698]=(19/20,18/25,3/20,31/50);
+pntcl[699]=(19/20,18/25,9/100,19/50);
+pntcl[700]=(43/100,13/50,3/100,2/25);
+pntcl[701]=(17/50,9/50,1/50,7/100);
+pntcl[702]=(21/100,9/100,1/100,1/25);
+pntcl[703]=(7/50,1/20,1/100,3/100);
+pntcl[704]=(1/1,29/50,23/100,77/100);
+pntcl[705]=(1/1,57/100,3/25,61/100);
+pntcl[706]=(1/1,29/50,9/100,21/50);
+pntcl[707]=(16/25,19/100,1/100,1/25);
+pntcl[708]=(39/100,2/25,0/1,1/100);
+pntcl[709]=(27/100,1/25,1/100,1/100);
+pntcl[710]=(21/100,1/50,0/1,1/100);
+pntcl[711]=(1/1,7/10,9/25,43/50);
+pntcl[712]=(71/100,3/10,13/100,41/100);
+pntcl[713]=(57/100,23/100,1/10,31/100);
+pntcl[714]=(11/25,3/20,7/100,11/50);
+pntcl[715]=(7/25,7/100,1/25,3/25);
+pntcl[716]=(21/100,1/25,3/100,2/25);
+pntcl[717]=(4/25,3/100,3/100,1/20);
+pntcl[718]=(1/1,2/5,8/25,83/100);
+pntcl[719]=(1/1,29/100,27/100,79/100);
+pntcl[720]=(1/1,19/100,1/4,37/50);
+pntcl[721]=(59/100,2/25,9/100,19/100);
+pntcl[722]=(43/100,1/20,3/50,1/10);
+pntcl[723]=(7/20,3/100,1/20,7/100);
+pntcl[724]=(11/50,1/50,3/100,3/100);
+pntcl[725]=(1/1,23/50,17/50,21/25);
+pntcl[726]=(83/100,7/50,23/100,1/2);
+pntcl[727]=(31/50,9/100,1/5,27/100);
+pntcl[728]=(23/50,1/20,7/50,7/50);
+pntcl[729]=(39/100,3/100,11/100,2/25);
+pntcl[730]=(7/25,1/50,2/25,1/20);
+pntcl[731]=(19/100,1/100,7/100,3/100);
+pntcl[732]=(17/20,19/50,1/2,21/25);
+pntcl[733]=(16/25,21/100,9/25,59/100);
+pntcl[734]=(23/50,7/50,13/50,43/100);
+pntcl[735]=(7/20,2/25,19/100,1/4);
+pntcl[736]=(13/50,1/20,13/100,3/20);
+pntcl[737]=(9/50,3/100,9/100,1/10);
+pntcl[738]=(13/100,1/50,3/50,3/50);
+pntcl[739]=(81/100,3/10,63/100,3/4);
+pntcl[740]=(83/100,17/100,31/50,14/25);
+pntcl[741]=(41/50,13/100,16/25,9/20);
+pntcl[742]=(51/100,1/20,37/100,3/20);
+pntcl[743]=(41/100,3/100,7/25,2/25);
+pntcl[744]=(8/25,1/50,11/50,1/25);
+pntcl[745]=(23/100,1/100,9/50,3/100);
+pntcl[746]=(83/100,7/20,51/100,81/100);
+pntcl[747]=(3/5,17/100,19/50,12/25);
+pntcl[748]=(47/100,11/100,3/10,33/100);
+pntcl[749]=(39/100,7/100,23/100,21/100);
+pntcl[750]=(31/100,1/20,19/100,7/50);
+pntcl[751]=(11/50,3/100,7/50,2/25);
+pntcl[752]=(7/50,1/100,1/10,1/25);
+pntcl[753]=(81/100,31/100,51/100,19/25);
+pntcl[754]=(83/100,4/25,9/20,27/50);
+pntcl[755]=(83/100,1/10,41/100,37/100);
+pntcl[756]=(13/25,1/100,13/50,3/100);
+pntcl[757]=(41/100,0/1,1/5,1/100);
+pntcl[758]=(8/25,0/1,7/50,0/1);
+pntcl[759]=(17/100,0/1,2/25,0/1);
+pntcl[760]=(41/50,37/100,16/25,83/100);
+pntcl[761]=(12/25,17/100,41/100,51/100);
+pntcl[762]=(41/100,13/100,17/50,39/100);
+pntcl[763]=(29/100,2/25,1/4,6/25);
+pntcl[764]=(11/50,1/20,19/100,4/25);
+pntcl[765]=(17/100,1/25,4/25,3/25);
+pntcl[766]=(3/25,3/100,13/100,2/25);
+pntcl[767]=(87/100,13/50,53/100,19/25);
+pntcl[768]=(89/100,11/100,12/25,47/100);
+pntcl[769]=(43/50,3/50,9/20,1/5);
+pntcl[770]=(1/2,0/1,6/25,0/1);
+pntcl[771]=(7/20,0/1,19/100,0/1);
+pntcl[772]=(29/100,0/1,13/100,0/1);
+pntcl[773]=(11/50,0/1,1/10,0/1);
+pntcl[774]=(27/50,6/25,17/20,69/100);
+pntcl[775]=(57/100,11/100,17/20,9/20);
+pntcl[776]=(13/25,3/50,79/100,1/4);
+pntcl[777]=(33/100,1/100,49/100,1/25);
+pntcl[778]=(27/100,1/100,21/50,3/100);
+pntcl[779]=(23/100,1/100,37/100,1/50);
+pntcl[780]=(4/25,0/1,3/10,0/1);
+pntcl[781]=(13/25,7/25,37/50,37/50);
+pntcl[782]=(2/5,19/100,33/50,29/50);
+pntcl[783]=(9/25,4/25,31/50,12/25);
+pntcl[784]=(7/25,1/10,12/25,31/100);
+pntcl[785]=(1/5,7/100,7/20,1/5);
+pntcl[786]=(4/25,1/20,7/25,3/20);
+pntcl[787]=(1/10,3/100,11/50,9/100);
+pntcl[788]=(49/100,27/100,49/50,79/100);
+pntcl[789]=(7/20,4/25,41/50,13/25);
+pntcl[790]=(3/10,3/25,33/50,9/25);
+pntcl[791]=(11/50,7/100,51/100,11/50);
+pntcl[792]=(7/50,1/25,9/25,3/25);
+pntcl[793]=(1/10,3/100,29/100,2/25);
+pntcl[794]=(7/100,1/50,21/100,1/20);
+pntcl[795]=(13/50,21/100,1/1,17/25);
+pntcl[796]=(11/50,9/100,1/1,39/100);
+pntcl[797]=(1/4,3/100,1/1,7/50);
+pntcl[798]=(3/20,0/1,73/100,1/100);
+pntcl[799]=(1/10,0/1,14/25,0/1);
+pntcl[800]=(2/25,0/1,1/2,0/1);
+pntcl[801]=(1/20,0/1,43/100,0/1);
+pntcl[802]=(8/25,31/100,24/25,79/100);
+pntcl[803]=(21/100,17/100,19/25,12/25);
+pntcl[804]=(3/20,3/25,57/100,3/10);
+pntcl[805]=(7/50,9/100,51/100,1/4);
+pntcl[806]=(1/10,1/20,37/100,7/50);
+pntcl[807]=(7/100,1/25,31/100,9/100);
+pntcl[808]=(1/20,3/100,13/50,3/50);
+pntcl[809]=(1/100,0/1,17/50,0/1);
+pntcl[810]=(1/100,0/1,2/5,0/1);
+pntcl[811]=(1/50,0/1,47/100,0/1);
+pntcl[812]=(1/50,1/100,33/50,0/1);
+pntcl[813]=(1/50,1/50,4/5,1/50);
+pntcl[814]=(0/1,1/50,1/1,2/25);
+pntcl[815]=(0/1,3/50,1/1,7/50);
+pntcl[816]=(1/100,0/1,29/100,0/1);
+pntcl[817]=(1/100,0/1,19/50,1/100);
+pntcl[818]=(1/50,1/100,47/100,1/50);
+pntcl[819]=(3/100,1/50,31/50,1/20);
+pntcl[820]=(1/20,3/100,19/25,11/100);
+pntcl[821]=(0/1,1/50,1/1,11/50);
+pntcl[822]=(0/1,1/25,1/1,3/10);
+pntcl[823]=(3/100,1/50,29/100,3/100);
+pntcl[824]=(1/25,3/100,7/20,3/50);
+pntcl[825]=(1/20,1/25,21/50,9/100);
+pntcl[826]=(7/100,3/50,13/25,3/20);
+pntcl[827]=(11/100,1/10,17/25,1/4);
+pntcl[828]=(13/100,17/100,39/50,7/20);
+pntcl[829]=(3/20,1/5,24/25,12/25);
+pntcl[830]=(3/25,1/100,9/100,1/50);
+pntcl[831]=(1/4,1/50,7/50,1/20);
+pntcl[832]=(9/25,3/100,21/100,1/10);
+pntcl[833]=(47/100,3/50,7/25,9/50);
+pntcl[834]=(61/100,1/10,19/50,8/25);
+pntcl[835]=(79/100,17/100,49/100,14/25);
+pntcl[836]=(47/50,17/50,3/5,41/50);
+pntcl[837]=(1/5,0/1,1/25,0/1);
+pntcl[838]=(37/100,0/1,7/100,0/1);
+pntcl[839]=(49/100,0/1,2/25,0/1);
+pntcl[840]=(73/100,0/1,11/100,0/1);
+pntcl[841]=(93/100,1/50,13/100,3/50);
+pntcl[842]=(1/1,3/50,1/10,7/25);
+pntcl[843]=(1/1,3/20,2/25,9/25);
+pntcl[844]=(3/10,0/1,3/50,0/1);
+pntcl[845]=(19/50,0/1,1/20,0/1);
+pntcl[846]=(13/20,0/1,7/100,0/1);
+pntcl[847]=(89/100,0/1,7/100,0/1);
+pntcl[848]=(1/1,1/100,1/20,1/20);
+pntcl[849]=(1/1,11/100,3/100,4/25);
+pntcl[850]=(1/1,1/4,0/1,9/50);
+pntcl[851]=(13/100,1/50,1/100,1/100);
+pntcl[852]=(21/100,3/100,1/100,1/50);
+pntcl[853]=(41/100,11/100,1/50,3/50);
+pntcl[854]=(11/20,6/25,1/50,2/25);
+pntcl[855]=(73/100,3/10,3/100,1/10);
+pntcl[856]=(24/25,53/100,1/20,6/25);
+pntcl[857]=(1/1,71/100,9/100,27/50);
+pntcl[858]=(1/10,3/100,1/100,0/1);
+pntcl[859]=(9/50,3/50,1/100,1/50);
+pntcl[860]=(2/5,4/25,1/100,1/50);
+pntcl[861]=(31/50,7/25,1/50,3/100);
+pntcl[862]=(24/25,59/100,1/25,17/100);
+pntcl[863]=(1/1,73/100,1/10,12/25);
+pntcl[864]=(1/1,4/5,3/25,63/100);
+pntcl[865]=(1/10,1/50,0/1,0/1);
+pntcl[866]=(23/100,3/50,0/1,0/1);
+pntcl[867]=(39/100,3/25,0/1,0/1);
+pntcl[868]=(3/5,29/100,0/1,0/1);
+pntcl[869]=(91/100,53/100,0/1,0/1);
+pntcl[870]=(1/1,3/4,0/1,1/20);
+pntcl[871]=(1/1,22/25,0/1,1/5);
+pntcl[872]=(1/25,3/50,0/1,1/100);
+pntcl[873]=(1/20,7/100,1/100,1/25);
+pntcl[874]=(1/5,1/5,0/1,1/100);
+pntcl[875]=(2/5,39/100,1/50,1/20);
+pntcl[876]=(59/100,29/50,1/25,3/25);
+pntcl[877]=(37/50,73/100,7/100,1/5);
+pntcl[878]=(9/10,19/20,1/10,41/100);
+pntcl[879]=(1/100,7/50,1/100,0/1);
+pntcl[880]=(1/50,1/4,0/1,0/1);
+pntcl[881]=(1/25,41/100,0/1,0/1);
+pntcl[882]=(2/25,51/100,0/1,0/1);
+pntcl[883]=(7/50,71/100,0/1,0/1);
+pntcl[884]=(3/20,47/50,3/100,3/25);
+pntcl[885]=(9/100,1/1,3/25,8/25);
+pntcl[886]=(1/50,7/50,1/50,1/100);
+pntcl[887]=(3/100,9/50,1/100,0/1);
+pntcl[888]=(1/25,23/100,0/1,0/1);
+pntcl[889]=(1/10,43/100,1/100,1/50);
+pntcl[890]=(9/50,57/100,3/100,2/25);
+pntcl[891]=(27/100,19/25,7/100,21/100);
+pntcl[892]=(23/100,22/25,11/100,47/100);
+pntcl[893]=(1/50,1/5,1/50,1/100);
+pntcl[894]=(3/100,27/100,1/100,0/1);
+pntcl[895]=(1/20,9/25,1/100,1/50);
+pntcl[896]=(1/10,12/25,1/50,7/100);
+pntcl[897]=(9/50,63/100,1/25,11/100);
+pntcl[898]=(27/100,81/100,2/25,7/25);
+pntcl[899]=(1/4,24/25,3/20,3/5);
+pntcl[900]=(0/1,7/50,1/20,1/100);
+pntcl[901]=(1/100,11/50,2/25,1/50);
+pntcl[902]=(1/50,33/100,9/100,3/50);
+pntcl[903]=(1/25,43/100,7/50,3/25);
+pntcl[904]=(7/100,14/25,1/5,23/100);
+pntcl[905]=(3/25,3/4,33/100,43/100);
+pntcl[906]=(7/50,4/5,39/100,9/20);
+pntcl[907]=(0/1,7/50,1/25,0/1);
+pntcl[908]=(0/1,6/25,1/20,0/1);
+pntcl[909]=(0/1,19/50,2/25,0/1);
+pntcl[910]=(0/1,53/100,7/50,0/1);
+pntcl[911]=(1/100,18/25,6/25,1/50);
+pntcl[912]=(1/25,43/50,43/100,13/100);
+pntcl[913]=(3/50,93/100,29/50,7/25);
+pntcl[914]=(0/1,1/10,1/50,0/1);
+pntcl[915]=(0/1,1/5,1/20,0/1);
+pntcl[916]=(0/1,17/50,2/25,0/1);
+pntcl[917]=(0/1,13/25,17/100,0/1);
+pntcl[918]=(0/1,7/10,27/100,0/1);
+pntcl[919]=(0/1,21/25,41/100,0/1);
+pntcl[920]=(0/1,23/25,14/25,1/100);
+pntcl[921]=(0/1,17/100,3/10,0/1);
+pntcl[922]=(0/1,1/4,39/100,0/1);
+pntcl[923]=(0/1,3/10,9/20,0/1);
+pntcl[924]=(0/1,23/50,17/20,0/1);
+pntcl[925]=(0/1,11/20,9/10,0/1);
+pntcl[926]=(0/1,3/5,1/1,3/100);
+pntcl[927]=(0/1,13/20,1/1,1/25);
+pntcl[928]=(0/1,7/50,6/25,0/1);
+pntcl[929]=(0/1,1/5,8/25,1/50);
+pntcl[930]=(0/1,31/100,43/100,1/50);
+pntcl[931]=(3/100,9/20,16/25,9/100);
+pntcl[932]=(1/20,53/100,79/100,1/5);
+pntcl[933]=(7/100,13/20,1/1,37/100);
+pntcl[934]=(11/100,69/100,1/1,1/2);
+pntcl[935]=(1/100,3/20,6/25,1/50);
+pntcl[936]=(1/50,21/100,3/10,1/25);
+pntcl[937]=(3/100,27/100,19/50,2/25);
+pntcl[938]=(7/100,39/100,53/100,17/100);
+pntcl[939]=(1/10,47/100,67/100,27/100);
+pntcl[940]=(3/25,63/100,1/1,61/100);
+pntcl[941]=(4/25,17/25,1/1,7/10);
+pntcl[942]=(0/1,1/20,1/4,0/1);
+pntcl[943]=(0/1,3/50,19/50,0/1);
+pntcl[944]=(0/1,11/100,51/100,0/1);
+pntcl[945]=(0/1,9/100,43/50,0/1);
+pntcl[946]=(0/1,11/100,97/100,0/1);
+pntcl[947]=(0/1,17/100,1/1,0/1);
+pntcl[948]=(3/100,17/50,17/25,2/25);
+pntcl[949]=(0/1,3/10,99/100,0/1);
+pntcl[950]=(0/1,33/100,49/50,0/1);
+pntcl[951]=(0/1,9/25,1/2,0/1);
+pntcl[952]=(0/1,21/50,69/100,0/1);
+pntcl[953]=(3/100,53/100,79/100,7/100);
+pntcl[954]=(1/100,31/50,19/20,1/50);
+pntcl[955]=(1/25,31/50,99/100,9/50);
+pntcl[956]=(0/1,7/25,13/50,1/100);
+pntcl[957]=(0/1,69/100,13/20,0/1);
+pntcl[958]=(0/1,4/5,4/5,0/1);
+pntcl[959]=(3/100,4/5,12/25,9/100);
+pntcl[960]=(2/25,77/100,37/100,27/100);
+pntcl[961]=(7/100,49/50,11/25,33/100);
+pntcl[962]=(3/20,1/1,39/100,69/100);
+pntcl[963]=(0/1,7/50,3/100,0/1);
+pntcl[964]=(0/1,71/100,4/25,0/1);
+pntcl[965]=(0/1,87/100,3/25,0/1);
+pntcl[966]=(1/25,93/100,7/25,7/50);
+pntcl[967]=(1/20,49/50,2/5,1/5);
+pntcl[968]=(7/100,1/1,67/100,31/100);
+pntcl[969]=(9/50,17/20,31/100,59/100);
+pntcl[970]=(1/50,23/100,1/50,0/1);
+pntcl[971]=(1/50,8/25,1/50,1/100);
+pntcl[972]=(3/100,12/25,1/20,7/100);
+pntcl[973]=(7/100,17/25,2/25,4/25);
+pntcl[974]=(7/100,83/100,4/25,23/100);
+pntcl[975]=(9/100,89/100,23/100,17/50);
+pntcl[976]=(13/100,47/50,19/100,9/20);
+pntcl[977]=(1/50,11/100,1/100,0/1);
+pntcl[978]=(3/20,29/100,0/1,0/1);
+pntcl[979]=(19/100,43/100,0/1,0/1);pntcl[980]=(3/10,11/25,0/1,0/1);
+pntcl[981]=(39/100,27/50,1/100,1/50);pntcl[982]=(51/100,71/100,0/1,0/1);
+pntcl[983]=(7/10,93/100,0/1,0/1);pntcl[984]=(9/100,7/100,0/1,1/100);
+pntcl[985]=(7/25,1/5,0/1,0/1);pntcl[986]=(2/5,3/10,0/1,1/50);
+pntcl[987]=(51/100,43/100,0/1,0/1);pntcl[988]=(19/25,77/100,3/50,9/50);
+pntcl[989]=(7/10,37/50,19/100,11/20);pntcl[990]=(17/25,17/20,29/100,37/50);
+pntcl[991]=(23/100,3/25,0/1,0/1);pntcl[992]=(23/50,13/50,0/1,0/1);
+pntcl[993]=(11/20,33/100,0/1,0/1);pntcl[994]=(11/20,1/4,0/1,0/1);
+pntcl[995]=(31/50,11/50,1/25,11/100);pntcl[996]=(9/10,3/5,0/1,0/1);
+pntcl[997]=(18/25,1/2,0/1,0/1);pntcl[998]=(17/100,0/1,1/50,0/1);
+pntcl[999]=(13/25,3/100,3/50,7/100);pntcl[1000]=(19/25,3/50,2/25,3/20);
+pntcl[1001]=(1/1,3/50,1/100,3/25);pntcl[1002]=(49/50,6/25,1/100,3/100);
+pntcl[1003]=(1/1,9/20,3/50,27/100);pntcl[1004]=(1/1,31/50,3/25,31/50);
+pntcl[1005]=(9/25,0/1,7/50,0/1);pntcl[1006]=(67/100,0/1,33/100,0/1);
+pntcl[1007]=(47/50,0/1,3/10,0/1);pntcl[1008]=(1/1,0/1,29/100,0/1);
+pntcl[1009]=(47/50,4/25,7/100,7/25);pntcl[1010]=(1/1,31/100,2/25,19/50);
+pntcl[1011]=(99/100,11/100,21/100,53/100);pntcl[1012]=(2/5,0/1,17/100,0/1);
+pntcl[1013]=(31/50,0/1,13/50,0/1);pntcl[1014]=(37/50,0/1,9/25,2/25);
+pntcl[1015]=(49/50,7/100,3/10,3/10);pntcl[1016]=(17/25,3/25,7/25,7/20);
+pntcl[1017]=(23/25,9/50,8/25,13/20);pntcl[1018]=(17/20,29/100,21/100,63/100);
+pntcl[1019]=(33/100,0/1,1/4,0/1);pntcl[1020]=(3/5,0/1,11/20,0/1);
+pntcl[1021]=(4/5,0/1,13/20,0/1);pntcl[1022]=(87/100,0/1,83/100,0/1);
+pntcl[1023]=(19/20,0/1,9/10,0/1);pntcl[1024]=(83/100,4/25,83/100,27/50);
+pntcl[1025]=(93/100,7/50,7/10,29/50);pntcl[1026]=(9/100,0/1,4/25,1/100);
+pntcl[1027]=(1/5,0/1,7/20,0/1);pntcl[1028]=(21/50,0/1,3/5,0/1);
+pntcl[1029]=(53/100,0/1,4/5,0/1);pntcl[1030]=(11/20,1/50,3/4,1/20);
+pntcl[1031]=(27/50,7/100,79/100,21/100);pntcl[1032]=(43/100,1/10,83/100,39/100);
+pntcl[1033]=(17/100,1/100,9/20,3/100);pntcl[1034]=(1/5,3/100,19/50,2/25);
+pntcl[1035]=(31/100,1/20,9/25,4/25);pntcl[1036]=(3/10,1/25,17/20,3/10);
+pntcl[1037]=(11/25,1/25,49/50,2/5);pntcl[1038]=(1/5,11/50,9/20,29/50);
+pntcl[1039]=(9/20,6/25,4/5,17/25);pntcl[1040]=(1/100,1/50,1/5,0/1);
+pntcl[1041]=(1/100,1/20,23/100,3/100);pntcl[1042]=(0/1,1/25,1/5,7/100);
+pntcl[1043]=(0/1,2/25,33/100,1/10);pntcl[1044]=(1/10,3/20,9/20,7/25);
+pntcl[1045]=(17/100,3/10,9/20,19/50);pntcl[1046]=(17/100,11/25,59/100,49/100);
+pntcl[1047]=(0/1,7/100,23/100,1/100);pntcl[1048]=(0/1,13/100,33/100,0/1);
+pntcl[1049]=(0/1,3/20,2/5,1/25);pntcl[1050]=(1/50,1/4,1/2,1/20);
+pntcl[1051]=(1/25,7/20,13/20,1/10);pntcl[1052]=(1/20,12/25,93/100,23/100);
+pntcl[1053]=(3/50,53/100,1/1,31/100);pntcl[1054]=(0/1,13/50,13/50,1/100);
+pntcl[1055]=(1/50,33/100,33/100,3/50);pntcl[1056]=(1/25,19/50,47/100,3/25);
+pntcl[1057]=(9/100,7/10,23/25,9/25);pntcl[1058]=(11/100,19/25,1/1,13/25);
+pntcl[1059]=(11/50,51/100,47/100,61/100);pntcl[1060]=(6/25,21/50,43/100,69/100);
+pntcl[1061]=(0/1,6/25,11/50,0/1);pntcl[1062]=(1/25,29/100,3/10,3/25);
+pntcl[1063]=(3/50,29/50,53/100,9/50);pntcl[1064]=(2/25,31/50,12/25,1/4);
+pntcl[1065]=(9/100,7/10,59/100,7/25);pntcl[1066]=(11/100,51/100,59/100,17/50);
+pntcl[1067]=(1/10,39/50,1/1,23/50);pntcl[1068]=(3/100,1/25,7/50,2/25);
+pntcl[1069]=(1/20,1/10,17/100,3/20);pntcl[1070]=(7/100,7/50,1/5,21/100);
+pntcl[1071]=(1/10,9/50,1/4,29/100);pntcl[1072]=(4/25,7/25,9/25,49/100);
+pntcl[1073]=(23/100,9/25,43/100,16/25);pntcl[1074]=(9/25,13/25,13/20,17/20);
+pntcl[1075]=(1/25,1/25,13/100,2/25);pntcl[1076]=(7/100,1/10,11/50,1/5);
+pntcl[1077]=(11/100,13/100,3/10,8/25);pntcl[1078]=(9/50,2/25,1/5,6/25);
+pntcl[1079]=(6/25,11/100,6/25,33/100);pntcl[1080]=(6/25,13/100,9/50,19/50);
+pntcl[1081]=(2/5,3/10,11/50,3/5);pntcl[1082]=(1/10,3/100,1/50,1/50);
+pntcl[1083]=(6/25,1/25,2/25,13/100);pntcl[1084]=(23/100,11/100,2/25,21/100);
+pntcl[1085]=(33/100,7/50,11/100,31/100);pntcl[1086]=(11/20,3/10,17/100,51/100);
+pntcl[1087]=(7/10,43/100,23/100,63/100);pntcl[1088]=(99/100,73/100,3/10,4/5);
+def rndPntcl =
+  pntcl[floor(uniformdeviate(1088)+1)];
+enddef;
+def rndPntclA =
+  pntcl[floor(uniformdeviate(5))+1+7*floor(uniformdeviate(152))+28];
+enddef;
+}%
